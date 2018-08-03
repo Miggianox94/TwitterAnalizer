@@ -104,6 +104,7 @@ public class MainLexResUploader {
 		Connection conn = null;
 
 		conn = DriverManager.getConnection(jdbcUrl, username, password);
+		conn.setAutoCommit(false);
 
 		return conn;
 	}
