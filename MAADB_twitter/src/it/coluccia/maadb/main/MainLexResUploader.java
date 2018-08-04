@@ -18,7 +18,7 @@ import it.coluccia.maadb.utils.SentimentEnum;
 public class MainLexResUploader {
 
 	/**
-	 * args[0] = jdbcurl. jdbc:oracle:thin:@localhost:1521:xe args[1] =
+	 * args[0] = jdbcurl. jdbc:oracle:thin:@localhost:1521:SID args[1] =
 	 * username. args[2] = password
 	 * 
 	 * @param args
@@ -49,31 +49,31 @@ public class MainLexResUploader {
 
 			System.out.println("############## ANGER RESOURCE UPLOADED ##############");
 
-			uploadLexicalResource(SentimentEnum.ANTICIPATION, rootDir + "/resources/LexicalResources/Anger/", conn);
+			uploadLexicalResource(SentimentEnum.ANTICIPATION, rootDir + "/resources/LexicalResources/Anticipation/", conn);
 
 			System.out.println("############## ANTICIPATION RESOURCE UPLOADED ##############");
 
-			uploadLexicalResource(SentimentEnum.DISGUST, rootDir + "/resources/LexicalResources/Anger/", conn);
+			uploadLexicalResource(SentimentEnum.DISGUST, rootDir + "/resources/LexicalResources/Disgust/", conn);
 
 			System.out.println("############## DISGUST RESOURCE UPLOADED ##############");
 
-			uploadLexicalResource(SentimentEnum.FEAR, rootDir + "/resources/LexicalResources/Anger/", conn);
+			uploadLexicalResource(SentimentEnum.FEAR, rootDir + "/resources/LexicalResources/Fear/", conn);
 
 			System.out.println("############## FEAR RESOURCE UPLOADED ##############");
 
-			uploadLexicalResource(SentimentEnum.JOY, rootDir + "/resources/LexicalResources/Anger/", conn);
+			uploadLexicalResource(SentimentEnum.JOY, rootDir + "/resources/LexicalResources/Joy/", conn);
 
 			System.out.println("############## JOY RESOURCE UPLOADED ##############");
 
-			uploadLexicalResource(SentimentEnum.SADNESS, rootDir + "/resources/LexicalResources/Anger/", conn);
+			uploadLexicalResource(SentimentEnum.SADNESS, rootDir + "/resources/LexicalResources/Sadness/", conn);
 
 			System.out.println("############## SADNESS RESOURCE UPLOADED ##############");
 
-			uploadLexicalResource(SentimentEnum.SURPRISE, rootDir + "/resources/LexicalResources/Anger/", conn);
+			uploadLexicalResource(SentimentEnum.SURPRISE, rootDir + "/resources/LexicalResources/Surprise/", conn);
 
 			System.out.println("############## SURPRISE RESOURCE UPLOADED ##############");
 
-			uploadLexicalResource(SentimentEnum.TRUST, rootDir + "/resources/LexicalResources/Anger/", conn);
+			uploadLexicalResource(SentimentEnum.TRUST, rootDir + "/resources/LexicalResources/Trust/", conn);
 
 			System.out.println("############## TRUST RESOURCE UPLOADED ##############");
 
@@ -132,7 +132,7 @@ public class MainLexResUploader {
 				if (file.getName().startsWith("EmoSN")) {
 					System.out.println("------ Uploading lexical resource of model EmoSN ");
 					String fileString = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
-					String[] words = fileString.split("\r\n");
+					String[] words = fileString.split("\\n");
 					for (String word : words) {
 						if (!StringUtils.isNullOrEmpty(word)) {
 							System.out.println("------ Uploading lexical resource " + word);
@@ -148,9 +148,41 @@ public class MainLexResUploader {
 						}
 					}
 				} else if (file.getName().startsWith("NRC")) {
-
+					System.out.println("------ Uploading lexical resource of model NRC ");
+					String fileString = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
+					String[] words = fileString.split("\\n");
+					for (String word : words) {
+						if (!StringUtils.isNullOrEmpty(word)) {
+							System.out.println("------ Uploading lexical resource " + word);
+							LexicalResource result = checkIfExist(word, sentiment, conn);
+							if (result == null) {
+								System.out.println("------ It is a new word " + word);
+								insertLexicalResource(word, sentiment, "NRC", conn);
+							} else {
+								System.out.println("------ Word present in datastore " + result);
+								result.setEmosnFreq(result.getEmosnFreq() + 1);
+								updateLexicalResource(result, conn);
+							}
+						}
+					}
 				} else if (file.getName().startsWith("sentisense")) {
-
+					System.out.println("------ Uploading lexical resource of model sentisense ");
+					String fileString = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
+					String[] words = fileString.split("\\n");
+					for (String word : words) {
+						if (!StringUtils.isNullOrEmpty(word)) {
+							System.out.println("------ Uploading lexical resource " + word);
+							LexicalResource result = checkIfExist(word, sentiment, conn);
+							if (result == null) {
+								System.out.println("------ It is a new word " + word);
+								insertLexicalResource(word, sentiment, "sentisense", conn);
+							} else {
+								System.out.println("------ Word present in datastore " + result);
+								result.setEmosnFreq(result.getEmosnFreq() + 1);
+								updateLexicalResource(result, conn);
+							}
+						}
+					}
 				} else {
 					throw new RuntimeException(
 							"!!! Lexical resource not recognized like lexical model !!! " + file.getAbsolutePath());
@@ -194,7 +226,7 @@ public class MainLexResUploader {
 	private static void insertLexicalResource(String word, SentimentEnum sentiment, String modelName, Connection conn) throws SQLException {
 		PreparedStatement preparedStatement = null;
 
-		String selectSQL = "INSERT INTO LEXICALRESOURCE VALUES WORD = ?, SENTIMENT_FK = ?, EMOSN_FREQ = ?,NRC_FREQ = ?,SENTISENSE_FREQ = ? ";
+		String selectSQL = "INSERT INTO LEXICALRESOURCE(WORD,SENTIMENT_FK,EMOSN_FREQ,NRC_FREQ,SENTISENSE_FREQ) VALUES (?,?,?,?,?) ";
 
 		try {
 			preparedStatement = conn.prepareStatement(selectSQL);
@@ -202,10 +234,16 @@ public class MainLexResUploader {
 			preparedStatement.setInt(2, sentiment.getTableId());
 			if ("EmoSN".equals(modelName)) {
 				preparedStatement.setInt(3, 1);
+				preparedStatement.setInt(4, 0);
+				preparedStatement.setInt(5, 0);
 			} else if ("NRC".equals(modelName)) {
+				preparedStatement.setInt(3, 0);
 				preparedStatement.setInt(4, 1);
+				preparedStatement.setInt(5, 0);
 			}
 			else if("sentisense".equals(modelName)){
+				preparedStatement.setInt(3, 0);
+				preparedStatement.setInt(4, 0);
 				preparedStatement.setInt(5, 1);
 			}
 			else{
@@ -242,14 +280,17 @@ public class MainLexResUploader {
 
 			ResultSet rs = preparedStatement.executeQuery();
 
-			rs.next();
-
-			result.setId(rs.getInt("ID"));
-			result.setEmosnFreq(rs.getInt("EMOSN_FREQ"));
-			result.setNrcFreq(rs.getInt("NRC_FREQ"));
-			result.setSentimentIdFk(rs.getInt("SENTIMENT_FK"));
-			result.setSentisenseFreq(rs.getInt("SENTISENSE_FREQ"));
-			result.setWord(rs.getString("WORD"));
+			if(rs.next()){
+				result.setId(rs.getInt("ID"));
+				result.setEmosnFreq(rs.getInt("EMOSN_FREQ"));
+				result.setNrcFreq(rs.getInt("NRC_FREQ"));
+				result.setSentimentIdFk(rs.getInt("SENTIMENT_FK"));
+				result.setSentisenseFreq(rs.getInt("SENTISENSE_FREQ"));
+				result.setWord(rs.getString("WORD"));	
+			}
+			else{
+				return null;
+			}
 
 		} finally {
 
