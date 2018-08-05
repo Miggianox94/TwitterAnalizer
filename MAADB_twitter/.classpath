@@ -5,5 +5,8 @@
 	<classpathentry kind="lib" path="libs/stanford-postagger-3.9.1.jar"/>
 	<classpathentry kind="lib" path="libs/ojdbc7.jar"/>
 	<classpathentry kind="lib" path="libs/commons-io-2.6.jar"/>
+	<classpathentry kind="lib" path="libs/stanford-corenlp-3.9.1-models.jar"/>
+	<classpathentry kind="lib" path="libs/stanford-corenlp-3.9.1.jar"/>
+	<classpathentry kind="lib" path="libs/javax.json.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
