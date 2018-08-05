@@ -22,12 +22,18 @@ import org.apache.commons.io.FileUtils;
 import edu.stanford.nlp.simple.Document;
 import edu.stanford.nlp.simple.Sentence;
 import edu.stanford.nlp.util.StringUtils;
+import it.coluccia.maadb.dataaccess.MongoDBDAO;
+import it.coluccia.maadb.dataaccess.OracleDAO;
 import it.coluccia.maadb.utils.Constants;
 import it.coluccia.maadb.utils.SentimentEnum;
 
 public class MainTweetProcessor {
 
 	private static final String TWEET_PATH = System.getProperty("user.dir") + "/resources/Tweets/";
+	
+	private static String jdbcUrl = null;
+	private static String usernameOracle = null;
+	private static String passwordOracle = null;
 
 	/**
 	 * args[0] = jdbcurl. jdbc:oracle:thin:@localhost:1521:SID args[1]
@@ -37,18 +43,24 @@ public class MainTweetProcessor {
 	 */
 	public static void main(String[] args) {
 
-		if (args.length != 4) {
+		if (args.length != 5) {
 			System.out.println("!!!! YOU MUST PASS 4 PARAMETERS --> ABORT !!!!");
 			System.exit(1);
 		}
 
-		String jdbcUrl = args[0];
-		String username = args[1];
-		String password = args[2];
+		jdbcUrl = args[0];
+		usernameOracle = args[1];
+		passwordOracle = args[2];
+		
 		Integer sentimentCode = Integer.parseInt(args[3]);
+		int persistMode = Integer.parseInt(args[4]);//1=ORACLE;2=MONGODB;3=ALL
 
 		if (!SentimentEnum.getIds().contains(sentimentCode)) {
 			throw new IllegalArgumentException("!!!! The sentimentID passed is not valid --> ABORT !!!!");
+		}
+		
+		if(persistMode != 1 && persistMode != 2 && persistMode != 3){
+			throw new IllegalArgumentException("!!!! The persistMode passed is not valid --> ABORT !!!!");
 		}
 
 		SentimentEnum sentimentChosed = SentimentEnum.getSentimentFromId(sentimentCode);
@@ -61,7 +73,7 @@ public class MainTweetProcessor {
 			String[] tweetSentences = fileString.split("\\n");
 			for (String sentence : tweetSentences) {
 				System.out.println("---------- STARTING PIPELINE FOR TWEET : " + sentence);
-				executePipeline(sentence, sentimentChosed);
+				executePipeline(sentence, sentimentChosed,persistMode);
 				// TODO:generateWordsCloud(sentimentChosed);
 			}
 		} catch (Exception e) {
@@ -72,7 +84,7 @@ public class MainTweetProcessor {
 		System.out.println("############## TWEET PROCESS COMPLETED : " + sentimentChosed + " ##############");
 	}
 
-	private static void executePipeline(String sentence, SentimentEnum sentiment) throws IOException {
+	private static void executePipeline(String sentence, SentimentEnum sentiment,int persistMode) throws Exception {
 		if (StringUtils.isNullOrEmpty(sentence)) {
 			System.out.println("Sentence empty --> SKIPPED!");
 			return;
@@ -91,7 +103,7 @@ public class MainTweetProcessor {
 		List<String> lemmas = lemmatization(tokenizedSentences);
 		lemmas = stopWordsDeletion(lemmas);
 		lemmas = puntualizationDeletion(lemmas);
-		// TODO:persist(lemmas, sentiment);
+		persist(lemmas,hashTags,emoji,emoticons,sentiment,persistMode);
 
 	}
 
@@ -273,6 +285,33 @@ public class MainTweetProcessor {
 		System.out.println("STEP8-END: stopWordsDeletion; Deleted tokens: " + numberDeletion);
 
 		return result;
+	}
+
+	private static void persist(List<String> lemmas,List<String> hashTags,List<String> emoji,List<String> emoticons, SentimentEnum sentiment,int persistMode) throws Exception{
+		System.out.println("STEP10-START: persist");
+		
+		if(lemmas != null && !lemmas.isEmpty()){
+			if(persistMode == 1){
+				OracleDAO oracleDao = new OracleDAO(jdbcUrl,usernameOracle,passwordOracle);
+			    oracleDao.persist(lemmas,hashTags,emoji,emoticons,sentiment);
+			}
+			else if(persistMode == 2){
+				MongoDBDAO mongoDBDao = new MongoDBDAO();
+				//TODO:mongoDBDao.persist(lemmas,hashTags,emoji,emoticons,sentiment);
+			}
+			else if(persistMode == 3){
+				OracleDAO oracleDao = new OracleDAO(jdbcUrl,usernameOracle,passwordOracle);
+				MongoDBDAO mongoDBDao = new MongoDBDAO();
+				
+				oracleDao.persist(lemmas,hashTags,emoji,emoticons,sentiment);
+				//TODO:mongoDBDao.persist(lemmas,hashTags,emoji,emoticons,sentiment);
+			}
+			else{
+				throw new IllegalArgumentException("!!! PersistMode parameter not valid --> ABORT!");
+			}
+		}
+		
+		System.out.println("STEP10-END: persist");
 	}
 
 }

@@ -160,7 +160,7 @@ public class MainLexResUploader {
 								insertLexicalResource(word, sentiment, "NRC", conn);
 							} else {
 								System.out.println("------ Word present in datastore " + result);
-								result.setEmosnFreq(result.getEmosnFreq() + 1);
+								result.setNrcFreq(result.getNrcFreq() + 1);
 								updateLexicalResource(result, conn);
 							}
 						}
@@ -178,7 +178,7 @@ public class MainLexResUploader {
 								insertLexicalResource(word, sentiment, "sentisense", conn);
 							} else {
 								System.out.println("------ Word present in datastore " + result);
-								result.setEmosnFreq(result.getEmosnFreq() + 1);
+								result.setSentisenseFreq(result.getSentisenseFreq() + 1);
 								updateLexicalResource(result, conn);
 							}
 						}
@@ -204,7 +204,7 @@ public class MainLexResUploader {
 			preparedStatement.setInt(1, updatedRecord.getEmosnFreq());
 			preparedStatement.setInt(2, updatedRecord.getNrcFreq());
 			preparedStatement.setInt(3, updatedRecord.getSentisenseFreq());
-			preparedStatement.setInt(4, updatedRecord.getSentimentIdFk());
+			preparedStatement.setInt(4, updatedRecord.getId());
 			
 			preparedStatement.executeUpdate();
 
