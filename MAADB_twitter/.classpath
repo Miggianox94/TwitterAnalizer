@@ -8,5 +8,12 @@
 	<classpathentry kind="lib" path="libs/stanford-corenlp-3.9.1-models.jar"/>
 	<classpathentry kind="lib" path="libs/stanford-corenlp-3.9.1.jar"/>
 	<classpathentry kind="lib" path="libs/javax.json.jar"/>
+	<classpathentry kind="lib" path="libs/ejml-0.23.jar"/>
+	<classpathentry kind="lib" path="libs/joda-time.jar"/>
+	<classpathentry kind="lib" path="libs/jollyday.jar"/>
+	<classpathentry kind="lib" path="libs/protobuf.jar"/>
+	<classpathentry kind="lib" path="libs/slf4j-api.jar"/>
+	<classpathentry kind="lib" path="libs/slf4j-simple.jar"/>
+	<classpathentry kind="lib" path="libs/xom.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

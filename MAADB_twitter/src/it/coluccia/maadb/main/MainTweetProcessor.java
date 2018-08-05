@@ -62,7 +62,7 @@ public class MainTweetProcessor {
 			for (String sentence : tweetSentences) {
 				System.out.println("---------- STARTING PIPELINE FOR TWEET : " + sentence);
 				executePipeline(sentence, sentimentChosed);
-				//TODO:generateWordsCloud(sentimentChosed);
+				// TODO:generateWordsCloud(sentimentChosed);
 			}
 		} catch (Exception e) {
 			System.out.println("!!!! ERROR OCCURRED --> ABORT !!!!");
@@ -89,8 +89,9 @@ public class MainTweetProcessor {
 		List<List<String>> tokenizedSentences = tokenize(sentence);
 		tokenizedSentences = substituteSlangAndAcronims(tokenizedSentences);
 		List<String> lemmas = lemmatization(tokenizedSentences);
+		lemmas = stopWordsDeletion(lemmas);
 		lemmas = puntualizationDeletion(lemmas);
-		//TODO:persist(lemmas, sentiment);
+		// TODO:persist(lemmas, sentiment);
 
 	}
 
@@ -111,7 +112,7 @@ public class MainTweetProcessor {
 		Pattern hashtagPattern = Pattern.compile("#\\w+");
 		Matcher mat = hashtagPattern.matcher(sentence);
 		while (mat.find()) {
-			hashTags.add(mat.group(1));
+			hashTags.add(mat.group());
 		}
 
 		sentence = sentence.replaceAll("#\\w+", "");
@@ -149,105 +150,128 @@ public class MainTweetProcessor {
 
 		byte[] utf8Bytes = sentence.getBytes("UTF-8");
 		String utf8tweet = new String(utf8Bytes, "UTF-8");
-		
-	    Pattern unicodeOutliers =
-		        Pattern.compile(
-		            "[\ud83c\udc00-\ud83c\udfff]|[\ud83d\udc00-\ud83d\udfff]|[\u2600-\u27ff]",
-		            Pattern.UNICODE_CASE |
-		            Pattern.CANON_EQ |
-		            Pattern.CASE_INSENSITIVE
-		        );
-	    
-	    Matcher unicodeOutlierMatcher = unicodeOutliers.matcher(utf8tweet);
-	    
-	    while (unicodeOutlierMatcher.find()) {
-	    	emoji.add(unicodeOutlierMatcher.group());
+
+		Pattern unicodeOutliers = Pattern.compile(
+				"[\ud83c\udc00-\ud83c\udfff]|[\ud83d\udc00-\ud83d\udfff]|[\u2600-\u27ff]",
+				Pattern.UNICODE_CASE | Pattern.CANON_EQ | Pattern.CASE_INSENSITIVE);
+
+		Matcher unicodeOutlierMatcher = unicodeOutliers.matcher(utf8tweet);
+
+		while (unicodeOutlierMatcher.find()) {
+			emoji.add(unicodeOutlierMatcher.group());
 		}
-	    
-	    utf8tweet =unicodeOutlierMatcher.replaceAll("");
+
+		utf8tweet = unicodeOutlierMatcher.replaceAll("");
 
 		System.out.println("STEP4-END: processEmoji. SENTENCE AFTER: " + utf8tweet);
 
 		return utf8tweet;
 	}
-	
-	private static List<List<String>> tokenize(String sentence){
+
+	private static List<List<String>> tokenize(String sentence) {
 		System.out.println("STEP5-START: tokenize. SENTENCE BEFORE: " + sentence);
-		
+
 		List<List<String>> result = new ArrayList<>();
-		
+
 		Document doc = new Document(sentence);
-		
-		for (Sentence sent : doc.sentences()){
+
+		for (Sentence sent : doc.sentences()) {
 			List<String> tokenizedSentence = new ArrayList<>();
 			tokenizedSentence.addAll(sent.words());
 			result.add(tokenizedSentence);
 		}
-		
+
 		System.out.println("STEP5-END: tokenize. Number of tokens: " + result.size());
-		
+
 		return result;
 	}
-	
-	private static List<List<String>> substituteSlangAndAcronims(List<List<String>> tokenizedSentences) throws IOException{
+
+	private static List<List<String>> substituteSlangAndAcronims(List<List<String>> tokenizedSentences)
+			throws IOException {
 		System.out.println("STEP6-START: substituteSlangAndAcronims");
-		
+
 		int numberSubstitution = 0;
 		List<List<String>> result = new ArrayList<>();
-		
-		JsonReader reader = Json.createReader(new FileInputStream(new File(System.getProperty("user.dir")+"/resources/nlpResources/slangWords.txt")));
-        JsonObject slangWords = reader.readObject();
-        reader.close();
-        
-        for(List<String> tokens : tokenizedSentences ){
-        	List<String> cleanedTokenizedSentence = new ArrayList<>();
-        	for(String token :  tokens){
-            	if(slangWords.get(token) != null){
-            		numberSubstitution++;
-            		cleanedTokenizedSentence.add(slangWords.get(token).toString());
-            	}
-            	cleanedTokenizedSentence.add(token);
-            }
-        	result.add(cleanedTokenizedSentence);
-	
-        }
-		
-		System.out.println("STEP6-END: substituteSlangAndAcronims; Substituted tokens: "+numberSubstitution);
-		
+
+		JsonReader reader = Json.createReader(new FileInputStream(
+				new File(System.getProperty("user.dir") + "/resources/nlpResources/slangWords.txt")));
+		JsonObject slangWords = reader.readObject();
+		reader.close();
+
+		for (List<String> tokens : tokenizedSentences) {
+			List<String> cleanedTokenizedSentence = new ArrayList<>();
+			for (String token : tokens) {
+				if (slangWords.get(token) != null) {
+					numberSubstitution++;
+					cleanedTokenizedSentence.add(slangWords.get(token).toString().replaceAll("\"", ""));
+				} else {
+					cleanedTokenizedSentence.add(token);
+				}
+			}
+			result.add(cleanedTokenizedSentence);
+
+		}
+
+		System.out.println("STEP6-END: substituteSlangAndAcronims; Substituted tokens: " + numberSubstitution);
+
 		return result;
 	}
-	
-	private static List<String> lemmatization(List<List<String>> tokenizedSentences){
+
+	private static List<String> lemmatization(List<List<String>> tokenizedSentences) {
 		System.out.println("STEP7-START: lemmatization");
-		
+
 		List<String> lemmas = new ArrayList<>();
-		
-		for(List<String> tokenizedSentence : tokenizedSentences){
+
+		for (List<String> tokenizedSentence : tokenizedSentences) {
 			Sentence sentence = new Sentence(tokenizedSentence);
 			lemmas.addAll(sentence.lemmas());
 		}
-		
+
 		System.out.println("STEP7-END: lemmatization");
-		
+
 		return lemmas;
 	}
-	
-	private static List<String> puntualizationDeletion(List<String> lemmas){
-		System.out.println("STEP8-START: puntalizationDeletion");
-		
-		String[] puntualizationMarks = new String[]{",","?","!",".",";",":","\\","/","(",")","&","_","+","=","<>","\""};
+
+	private static List<String> puntualizationDeletion(List<String> lemmas) {
+		System.out.println("STEP9-START: puntalizationDeletion");
+
+		String[] puntualizationMarks = new String[] { ",", "?", "!", ".", ";", ":", "\\", "/", "(", ")", "&", "_", "+",
+				"=", "<>", "\"" };
 		Set<String> puntualizationMarksSet = Arrays.stream(puntualizationMarks).collect(Collectors.toSet());
-		
+
 		List<String> result = new ArrayList<>();
-		
-		for(String lemma : lemmas){
-			if(!puntualizationMarksSet.contains(lemma)){
+
+		for (String lemma : lemmas) {
+			if (!puntualizationMarksSet.contains(lemma)) {
 				result.add(lemma);
 			}
 		}
+
+		System.out.println("STEP9-END: puntalizationDeletion");
+
+		return result;
+	}
+
+	private static List<String> stopWordsDeletion(List<String> lemmas) {
+		System.out.println("STEP8-START: stopWordsDeletion");
+
+		Set<String> stopWordsSet = Arrays.stream(Constants.STOP_WORDS_ARRAY).collect(Collectors.toSet());
+
+		List<String> result = new ArrayList<>();
 		
-		System.out.println("STEP8-END: puntalizationDeletion");
-		
+		int numberDeletion = 0;
+
+		for (String lemma : lemmas) {
+			if (!stopWordsSet.contains(lemma)) {
+				result.add(lemma);
+			}
+			else{
+				numberDeletion++;
+			}
+		}
+
+		System.out.println("STEP8-END: stopWordsDeletion; Deleted tokens: " + numberDeletion);
+
 		return result;
 	}
 
