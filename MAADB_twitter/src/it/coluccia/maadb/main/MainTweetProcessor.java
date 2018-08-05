@@ -62,9 +62,9 @@ public class MainTweetProcessor {
 			for (String sentence : tweetSentences) {
 				System.out.println("---------- STARTING PIPELINE FOR TWEET : " + sentence);
 				executePipeline(sentence, sentimentChosed);
-				generateWordsCloud(sentimentChosed);
+				//TODO:generateWordsCloud(sentimentChosed);
 			}
-		} catch (IOException e) {
+		} catch (Exception e) {
 			System.out.println("!!!! ERROR OCCURRED --> ABORT !!!!");
 			e.printStackTrace();
 		}
@@ -72,7 +72,7 @@ public class MainTweetProcessor {
 		System.out.println("############## TWEET PROCESS COMPLETED : " + sentimentChosed + " ##############");
 	}
 
-	private static void executePipeline(String sentence, SentimentEnum sentiment) {
+	private static void executePipeline(String sentence, SentimentEnum sentiment) throws IOException {
 		if (StringUtils.isNullOrEmpty(sentence)) {
 			System.out.println("Sentence empty --> SKIPPED!");
 			return;
@@ -90,7 +90,7 @@ public class MainTweetProcessor {
 		tokenizedSentences = substituteSlangAndAcronims(tokenizedSentences);
 		List<String> lemmas = lemmatization(tokenizedSentences);
 		lemmas = puntualizationDeletion(lemmas);
-		persist(lemmas, sentiment);
+		//TODO:persist(lemmas, sentiment);
 
 	}
 
