@@ -1,70 +1,176 @@
 version: '2'
-
 services:
-  mongodb-primary:
-    image: 'bitnami/mongodb:latest'
-    user: root
-    ports:
-      - "27017:27017"
-    environment:
-      - MONGODB_REPLICA_SET_MODE=primary
-      - MONGODB_REPLICA_SET_NAME=primaryReplica
-    volumes:
-      - ./datafiles:/bitnami
-      - ./config:/opt/bitnami/mongodb/conf
-    ##depends_on:
-     ## - db-data
+
+    # SHARD 1
+    
+    shard1_replica1:
+        image: khezen/mongo:slim
+        environment:
+            RS_NAME: shard1
+            SHARD_SVR: 'y'
+            AUTH: 'y'
+        volumes:
+             - ./data/mongo/shard1/replica1:/data/db
+        restart: always
+        networks:
+            - mongo_cluster
+            
+            
+    shard1_replica2:
+        image: khezen/mongo:slim
+        environment:
+            RS_NAME: shard1
+            SHARD_SVR: 'y'
+            AUTH: 'y'
+        volumes:
+             - ./data/mongo/shard1/replica2:/data/db
+        restart: always
+        networks:
+            - mongo_cluster
+            
+            
+    shard1_replica3:
+        image: khezen/mongo:slim
+        environment:
+            RS_NAME: shard1
+            SHARD_SVR: 'y'
+            MASTER: shard1_replica3
+            SLAVES: shard1_replica1 shard1_replica2
+            AUTH: 'y'
+        volumes:
+             - ./data/mongo/shard1/replica3:/data/db
+        restart: always
+        networks:
+            - mongo_cluster
+        
+        
       
-  ##db-data:
-  ##  image: busybox
-  ##  volumes:
-  ##      - ./datafiles:/bitnami
-  ##      - ./config:/opt/bitnami/mongodb/conf
-  ##  command:
-  ##      - chown -R -1001:1001 /bitnami
+  # SHARD 2
+  
+    shard2_replica1:
+        image: khezen/mongo:slim
+        environment:
+            RS_NAME: shard2
+            SHARD_SVR: 'y'
+            AUTH: 'y'
+        volumes:
+             - ./data/mongo/shard2/replica1:/data/db
+        restart: always
+        networks:
+            - mongo_cluster
+            
+            
+    shard2_replica2:
+        image: khezen/mongo:slim
+        environment:
+            RS_NAME: shard2
+            SHARD_SVR: 'y'
+            AUTH: 'y'
+        volumes:
+             - ./data/mongo/shard2/replica2:/data/db
+        restart: always
+        networks:
+            - mongo_cluster
+            
+    shard2_replica3:
+        image: khezen/mongo:slim
+        environment:
+            RS_NAME: shard2
+            SHARD_SVR: 'y'
+            MASTER: shard2_replica3
+            SLAVES: shard2_replica1 shard2_replica2
+            AUTH: 'y'
+        volumes:
+             - ./data/mongo/shard2/replica3:/data/db
+        restart: always
+        networks:
+            - mongo_cluster
 
 
-  mongodb-secondary-first:
-    image: 'bitnami/mongodb:latest'
-    depends_on:
-      - mongodb-primary
-    environment:
-      - MONGODB_REPLICA_SET_MODE=secondary
-      - MONGODB_PRIMARY_HOST=mongodb-primary
-      - MONGODB_PRIMARY_PORT_NUMBER=27017
-      - MONGODB_REPLICA_SET_NAME=primaryReplica
-      - MONGODB_ADVERTISED_HOSTNAME=mongodb-secondary-first
-      
-  mongodb-secondary-second:
-    image: 'bitnami/mongodb:latest'
-    depends_on:
-      - mongodb-primary
-    environment:
-      - MONGODB_REPLICA_SET_MODE=secondary
-      - MONGODB_PRIMARY_HOST=mongodb-primary
-      - MONGODB_PRIMARY_PORT_NUMBER=27017
-      - MONGODB_REPLICA_SET_NAME=primaryReplica
-      - MONGODB_ADVERTISED_HOSTNAME=mongodb-secondary-second
-      
-  mongodb-secondary-third:
-    image: 'bitnami/mongodb:latest'
-    depends_on:
-      - mongodb-primary
-    environment:
-      - MONGODB_REPLICA_SET_MODE=secondary
-      - MONGODB_PRIMARY_HOST=mongodb-primary
-      - MONGODB_PRIMARY_PORT_NUMBER=27017
-      - MONGODB_REPLICA_SET_NAME=primaryReplica
-      - MONGODB_ADVERTISED_HOSTNAME=mongodb-secondary-third
+# CONFIG SVRS
 
-  mongodb-arbiter:
-    image: 'bitnami/mongodb:latest'
-    depends_on:
-      - mongodb-primary
-    environment:
-      - MONGODB_REPLICA_SET_MODE=arbiter
-      - MONGODB_PRIMARY_HOST=mongodb-primary
-      - MONGODB_PRIMARY_PORT_NUMBER=27017
-      - MONGODB_REPLICA_SET_NAME=primaryReplica
-      - MONGODB_ADVERTISED_HOSTNAME=mongodb-arbiter
-      
+
+    configsvr1:
+        image: khezen/mongo:slim
+        environment:
+            RS_NAME: configsvr
+            CONFIG_SVR: 'y'
+            AUTH: 'y'
+        volumes:
+             - ./data/mongo/configsvr/replica1:/data/db
+        restart: always
+        networks:
+            - mongo_cluster
+            
+    configsvr2:
+        image: khezen/mongo:slim
+        environment:
+            RS_NAME: configsvr
+            CONFIG_SVR: 'y'
+            AUTH: 'y'
+        volumes:
+             - ./data/mongo/configsvr/replica2:/data/db
+        restart: always
+        networks:
+            - mongo_cluster
+            
+    configsvr3:
+        image: khezen/mongo:slim
+        environment:
+            RS_NAME: configsvr
+            CONFIG_SVR: 'y'
+            MASTER: configsvr3
+            SLAVES: configsvr1 configsvr2
+            AUTH: 'y'
+        volumes:
+             - ./data/mongo/configsvr/replica3:/data/db
+        restart: always
+        networks:
+            - mongo_cluster
+            
+    
+    
+    # MONGOS
+    
+    
+    mongos:
+        image: khezen/mongo:slim
+        environment:
+          CONFIG_SERVERS:  configsvr/configsvr3:27017
+          SHARDS: shard1/shard1_replica3 shard2/shard2_replica3
+          AUTH: 'y'
+          SERVICE_PORTS: 27017
+          TCP_PORTS: 27017
+        restart: always
+        networks:
+            - mongo_cluster
+        ports:
+            - "27017:27017"
+           
+#    load_balancer:
+#        image: dockercloud/haproxy:1.6.2
+#        depends_on:
+#            - mongos
+#        environment:
+#            STATS_PORT: 9000
+#            STATS_AUTH: stats:statsp
+#        volumes:
+#          - ./var/run/docker.sock:/var/run/docker.sock
+#        restart: always
+#        networks:
+#          - mongo_cluster
+#        ports:
+#          - "9090:9000"
+#          - "27017:27017"
+
+     
+
+networks:
+  mongo_cluster:
+    driver: bridge
+
+
+            
+
+
+  
