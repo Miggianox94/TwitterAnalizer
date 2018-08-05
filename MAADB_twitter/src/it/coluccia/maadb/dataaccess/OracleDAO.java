@@ -71,6 +71,9 @@ public class OracleDAO {
 		if (connection != null && !connection.isClosed()) {
 			connection.commit();
 			connection.close();
+			if (connection.isClosed()) {
+				System.out.println("************** CONNECTION CORRECTLY CLOSED *********");
+			}
 		}
 	}
 
