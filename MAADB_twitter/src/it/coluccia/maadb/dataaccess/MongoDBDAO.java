@@ -72,7 +72,7 @@ public class MongoDBDAO {
 			return;
 		}
 		List<Document> hashtagsDocuments = createDocumentList(hashtags,sentiment);
-		database.getCollection(MongoCollection.TWEETS.name()).insertMany(hashtagsDocuments);
+		database.getCollection(MongoCollection.HASHTAGS.name()).insertMany(hashtagsDocuments);
 	}
 	
 	private void insertEmoji(List<String> emoji,SentimentEnum sentiment){
@@ -80,7 +80,7 @@ public class MongoDBDAO {
 			return;
 		}
 		List<Document> emojiDocuments = createDocumentList(emoji,sentiment);
-		database.getCollection(MongoCollection.TWEETS.name()).insertMany(emojiDocuments);
+		database.getCollection(MongoCollection.EMOJI.name()).insertMany(emojiDocuments);
 	}
 	
 	private void insertEmoticons(List<String> emoticons,SentimentEnum sentiment){
@@ -88,7 +88,7 @@ public class MongoDBDAO {
 			return;
 		}
 		List<Document> emoticonsDocuments = createDocumentList(emoticons,sentiment);
-		database.getCollection(MongoCollection.TWEETS.name()).insertMany(emoticonsDocuments);
+		database.getCollection(MongoCollection.EMOTICONS.name()).insertMany(emoticonsDocuments);
 	}
 	
 	
