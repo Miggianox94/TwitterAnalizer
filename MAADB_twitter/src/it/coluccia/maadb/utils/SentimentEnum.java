@@ -37,6 +37,20 @@ public enum SentimentEnum {
 		this.fileName = fileName;
 	}
 	
+	public static Set<String> toStringSet(){
+		Set<String> set = new HashSet<>();
+		set.add(ANGER.name());
+		set.add(ANTICIPATION.name());
+		set.add(DISGUST.name());
+		set.add(FEAR.name());
+		set.add(JOY.name());
+		set.add(SADNESS.name());
+		set.add(SURPRISE.name());
+		set.add(TRUST.name());
+		
+		return set;
+	}
+	
 	public static Set<Integer> getIds(){
 		Set<Integer> result = new HashSet<>();
 		result.add(ANGER.getTableId());

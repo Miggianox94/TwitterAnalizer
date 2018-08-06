@@ -96,7 +96,7 @@ public class MongoDBDAO {
 		List<Document> result = new ArrayList<>();
 		
 		for(String word : words){
-			Document wordDoc = new Document("word",word).append("sentiment", sentiment);
+			Document wordDoc = new Document("word",word).append("sentiment", sentiment.name());
 			result.add(wordDoc);
 		}
 		
@@ -122,39 +122,38 @@ public class MongoDBDAO {
 			else if(name.equals(MongoCollection.EMOJI.getMongoName())){
 				emojiExist = true;
 			}
-			
-			if(!tweetExist){
-				System.out.println("MONGODB: tweets collection not exist, creating...");
-				ValidationOptions collOptions = new ValidationOptions().validator(
-				        Filters.and(Filters.exists("word"), Filters.exists("sentiment"),Filters.in("sentiment",SentimentEnum.values())));
-				database.createCollection(MongoCollection.TWEETS.getMongoName(),
-				        new CreateCollectionOptions().validationOptions(collOptions));
-			}
-			
-			if(!hashtagExist){
-				System.out.println("MONGODB: hashtags collection not exist, creating...");
-				ValidationOptions collOptions = new ValidationOptions().validator(
-				        Filters.and(Filters.exists("word"), Filters.exists("sentiment"),Filters.in("sentiment",SentimentEnum.values())));
-				database.createCollection(MongoCollection.HASHTAGS.getMongoName(),
-				        new CreateCollectionOptions().validationOptions(collOptions));
-			}
-			
-			if(!emoticonsExist){
-				System.out.println("MONGODB: emoticons collection not exist, creating...");
-				ValidationOptions collOptions = new ValidationOptions().validator(
-				        Filters.and(Filters.exists("word"), Filters.exists("sentiment"),Filters.in("sentiment",SentimentEnum.values())));
-				database.createCollection(MongoCollection.EMOTICONS.getMongoName(),
-				        new CreateCollectionOptions().validationOptions(collOptions));
-			}
-			
-			if(!emojiExist){
-				System.out.println("MONGODB: emoji collection not exist, creating...");
-				ValidationOptions collOptions = new ValidationOptions().validator(
-				        Filters.and(Filters.exists("word"), Filters.exists("sentiment"),Filters.in("sentiment",SentimentEnum.values())));
-				database.createCollection(MongoCollection.EMOJI.getMongoName(),
-				        new CreateCollectionOptions().validationOptions(collOptions));
-			}
-			
+		}
+		
+		if(!tweetExist){
+			System.out.println("MONGODB: tweets collection not exist, creating...");
+			ValidationOptions collOptions = new ValidationOptions().validator(
+			        Filters.and(Filters.exists("word"), Filters.exists("sentiment"),Filters.in("sentiment",SentimentEnum.toStringSet())));
+			database.createCollection(MongoCollection.TWEETS.getMongoName(),
+			        new CreateCollectionOptions().validationOptions(collOptions));
+		}
+		
+		if(!hashtagExist){
+			System.out.println("MONGODB: hashtags collection not exist, creating...");
+			ValidationOptions collOptions = new ValidationOptions().validator(
+			        Filters.and(Filters.exists("word"), Filters.exists("sentiment"),Filters.in("sentiment",SentimentEnum.toStringSet())));
+			database.createCollection(MongoCollection.HASHTAGS.getMongoName(),
+			        new CreateCollectionOptions().validationOptions(collOptions));
+		}
+		
+		if(!emoticonsExist){
+			System.out.println("MONGODB: emoticons collection not exist, creating...");
+			ValidationOptions collOptions = new ValidationOptions().validator(
+			        Filters.and(Filters.exists("word"), Filters.exists("sentiment"),Filters.in("sentiment",SentimentEnum.toStringSet())));
+			database.createCollection(MongoCollection.EMOTICONS.getMongoName(),
+			        new CreateCollectionOptions().validationOptions(collOptions));
+		}
+		
+		if(!emojiExist){
+			System.out.println("MONGODB: emoji collection not exist, creating...");
+			ValidationOptions collOptions = new ValidationOptions().validator(
+			        Filters.and(Filters.exists("word"), Filters.exists("sentiment"),Filters.in("sentiment",SentimentEnum.toStringSet())));
+			database.createCollection(MongoCollection.EMOJI.getMongoName(),
+			        new CreateCollectionOptions().validationOptions(collOptions));
 		}
 	}
 	

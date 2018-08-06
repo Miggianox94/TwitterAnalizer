@@ -1,0 +1,18 @@
+------------------------------
+
+use maadb_twitter
+
+------------------------------
+
+
+db.createUser(
+  {
+    user: "twitter_user",
+    pwd: "twitter_password",
+    roles: [
+       { role: "readWrite", db: "maadb_twitter" }
+    ]
+  }
+)
+
+-------------------

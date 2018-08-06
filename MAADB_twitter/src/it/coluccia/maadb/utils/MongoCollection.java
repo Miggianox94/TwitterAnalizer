@@ -1,5 +1,8 @@
 package it.coluccia.maadb.utils;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public enum MongoCollection {
 	TWEETS("tweets"),
     HASHTAGS("hashtags"),
@@ -19,8 +22,7 @@ public enum MongoCollection {
 	public void setMongoName(String mongoName) {
 		this.mongoName = mongoName;
 	}
-	
-	
+
 
 
 	

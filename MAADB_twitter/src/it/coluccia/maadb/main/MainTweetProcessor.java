@@ -50,7 +50,7 @@ public class MainTweetProcessor {
 	 */
 	public static void main(String[] args) {
 
-		if (args.length != 5) {
+		if (args.length != 10) {
 			System.out.println("!!!! YOU MUST PASS 4 PARAMETERS --> ABORT !!!!");
 			System.exit(1);
 		}
