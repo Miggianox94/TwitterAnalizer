@@ -34,10 +34,17 @@ public class MainTweetProcessor {
 	private static String jdbcUrl = null;
 	private static String usernameOracle = null;
 	private static String passwordOracle = null;
+	
+	private static String mongoHost = null;
+	private static int mongoPort = 0;
+	private static String mongoUser = null;
+	private static String mongoPassword = null;
+	private static String mongoDbName = null;
 
 	/**
 	 * args[0] = jdbcurl. jdbc:oracle:thin:@localhost:1521:SID args[1]
-	 * =oracleusername args[2] = oraclepassword args[3] = sentimentCode
+	 * =oracleusername args[2] = oraclepassword args[3] = sentimentCode; args[4] = persistMode; args[5] = mongohost;
+	 * args[6] = mongoUser; args[7] = mongoPassword; args[8] = mongoDbName; args[9] = mongoPort;
 	 * 
 	 * @param args
 	 */
@@ -52,8 +59,16 @@ public class MainTweetProcessor {
 		usernameOracle = args[1];
 		passwordOracle = args[2];
 		
+		
+		
 		Integer sentimentCode = Integer.parseInt(args[3]);
 		int persistMode = Integer.parseInt(args[4]);//1=ORACLE;2=MONGODB;3=ALL
+		
+		mongoHost = args[5];
+		mongoUser = args[6];
+		mongoPassword = args[7];
+		mongoDbName = args[8];
+		mongoPort = Integer.parseInt(args[9]);
 
 		if (!SentimentEnum.getIds().contains(sentimentCode)) {
 			throw new IllegalArgumentException("!!!! The sentimentID passed is not valid --> ABORT !!!!");
@@ -61,6 +76,12 @@ public class MainTweetProcessor {
 		
 		if(persistMode != 1 && persistMode != 2 && persistMode != 3){
 			throw new IllegalArgumentException("!!!! The persistMode passed is not valid --> ABORT !!!!");
+		}
+		
+		if(persistMode == 2 || persistMode == 3){
+			System.out.println("############## TRUNCATING MONGO COLLECTIONS ##############");
+			MongoDBDAO mongoDbDao = new MongoDBDAO(mongoHost, mongoPort, mongoUser, mongoPassword, mongoDbName);
+			mongoDbDao.truncateCollections();
 		}
 
 		SentimentEnum sentimentChosed = SentimentEnum.getSentimentFromId(sentimentCode);
@@ -296,15 +317,15 @@ public class MainTweetProcessor {
 			    oracleDao.persist(lemmas,hashTags,emoji,emoticons,sentiment);
 			}
 			else if(persistMode == 2){
-				MongoDBDAO mongoDBDao = new MongoDBDAO();
-				//TODO:mongoDBDao.persist(lemmas,hashTags,emoji,emoticons,sentiment);
+				MongoDBDAO mongoDbDao = new MongoDBDAO(mongoHost, mongoPort, mongoUser, mongoPassword, mongoDbName);
+				mongoDbDao.persist(lemmas,hashTags,emoji,emoticons,sentiment);
 			}
 			else if(persistMode == 3){
 				OracleDAO oracleDao = new OracleDAO(jdbcUrl,usernameOracle,passwordOracle);
-				MongoDBDAO mongoDBDao = new MongoDBDAO();
+				MongoDBDAO mongoDbDao = new MongoDBDAO(mongoHost, mongoPort, mongoUser, mongoPassword, mongoDbName);
 				
 				oracleDao.persist(lemmas,hashTags,emoji,emoticons,sentiment);
-				//TODO:mongoDBDao.persist(lemmas,hashTags,emoji,emoticons,sentiment);
+				mongoDbDao.persist(lemmas,hashTags,emoji,emoticons,sentiment);
 			}
 			else{
 				throw new IllegalArgumentException("!!! PersistMode parameter not valid --> ABORT!");

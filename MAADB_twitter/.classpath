@@ -15,5 +15,8 @@
 	<classpathentry kind="lib" path="libs/slf4j-api.jar"/>
 	<classpathentry kind="lib" path="libs/slf4j-simple.jar"/>
 	<classpathentry kind="lib" path="libs/xom.jar"/>
+	<classpathentry kind="lib" path="libs/mongodb-driver-sync-3.8.0.jar"/>
+	<classpathentry kind="lib" path="libs/mongodb-driver-3.8.0.jar"/>
+	<classpathentry kind="lib" path="libs/mongo-java-driver-3.8.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
