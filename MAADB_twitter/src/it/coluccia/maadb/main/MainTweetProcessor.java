@@ -40,6 +40,8 @@ public class MainTweetProcessor {
 	private static String mongoUser = null;
 	private static String mongoPassword = null;
 	private static String mongoDbName = null;
+	
+	private static MongoDBDAO mongoDbDao = null;
 
 	/**
 	 * args[0] = jdbcurl. jdbc:oracle:thin:@localhost:1521:SID args[1]
@@ -80,7 +82,7 @@ public class MainTweetProcessor {
 		
 		if(persistMode == 2 || persistMode == 3){
 			System.out.println("############## TRUNCATING MONGO COLLECTIONS ##############");
-			MongoDBDAO mongoDbDao = new MongoDBDAO(mongoHost, mongoPort, mongoUser, mongoPassword, mongoDbName);
+			mongoDbDao = new MongoDBDAO(mongoHost, mongoPort, mongoUser, mongoPassword, mongoDbName);
 			mongoDbDao.truncateCollections();
 		}
 
@@ -95,8 +97,9 @@ public class MainTweetProcessor {
 			for (String sentence : tweetSentences) {
 				System.out.println("---------- STARTING PIPELINE FOR TWEET : " + sentence);
 				executePipeline(sentence, sentimentChosed,persistMode);
-				// TODO:generateWordsCloud(sentimentChosed);
 			}
+			// TODO:filterResults();
+			// TODO:generateWordsCloud(sentimentChosed);
 		} catch (Exception e) {
 			System.out.println("!!!! ERROR OCCURRED --> ABORT !!!!");
 			e.printStackTrace();
@@ -317,12 +320,12 @@ public class MainTweetProcessor {
 			    oracleDao.persist(lemmas,hashTags,emoji,emoticons,sentiment);
 			}
 			else if(persistMode == 2){
-				MongoDBDAO mongoDbDao = new MongoDBDAO(mongoHost, mongoPort, mongoUser, mongoPassword, mongoDbName);
+				//MongoDBDAO mongoDbDao = new MongoDBDAO(mongoHost, mongoPort, mongoUser, mongoPassword, mongoDbName);
 				mongoDbDao.persist(lemmas,hashTags,emoji,emoticons,sentiment);
 			}
 			else if(persistMode == 3){
 				OracleDAO oracleDao = new OracleDAO(jdbcUrl,usernameOracle,passwordOracle);
-				MongoDBDAO mongoDbDao = new MongoDBDAO(mongoHost, mongoPort, mongoUser, mongoPassword, mongoDbName);
+				//MongoDBDAO mongoDbDao = new MongoDBDAO(mongoHost, mongoPort, mongoUser, mongoPassword, mongoDbName);
 				
 				oracleDao.persist(lemmas,hashTags,emoji,emoticons,sentiment);
 				mongoDbDao.persist(lemmas,hashTags,emoji,emoticons,sentiment);

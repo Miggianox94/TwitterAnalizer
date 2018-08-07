@@ -16,3 +16,35 @@ db.createUser(
 )
 
 -------------------
+
+use admin
+
+db.runCommand( { enableSharding: "maadb_twitter" } )
+
+-------------------
+
+use admin
+
+db.adminCommand( {
+   shardCollection: "maadb_twitter.tweets",
+   key: { objectid: "hashed" }
+} )
+
+db.adminCommand( {
+   shardCollection: "maadb_twitter.hashtags",
+   key: { objectid: "hashed" }
+} )
+
+
+db.adminCommand( {
+   shardCollection: "maadb_twitter.emoticons",
+   key: { objectid: "hashed" }
+} )
+
+
+db.adminCommand( {
+   shardCollection: "maadb_twitter.emoji",
+   key: { objectid: "hashed" }
+} )
+
+-------------------

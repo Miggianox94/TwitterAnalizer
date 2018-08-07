@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.bson.Document;
+import org.bson.types.ObjectId;
 
 import com.mongodb.MongoClientSettings;
 import com.mongodb.MongoCredential;
@@ -49,14 +50,14 @@ public class MongoDBDAO {
 		insertHashTags(hashTags,sentiment);
 		insertEmoji(emoji,sentiment);
 		insertEmoticons(emoticons,sentiment);
-		mongo.close();
+		//mongo.close();
 	}
 	
 	public void truncateCollections(){
-		database.getCollection(MongoCollection.TWEETS.name()).drop();
-		database.getCollection(MongoCollection.EMOJI.name()).drop();
-		database.getCollection(MongoCollection.EMOTICONS.name()).drop();
-		database.getCollection(MongoCollection.HASHTAGS.name()).drop();
+		database.getCollection(MongoCollection.TWEETS.getMongoName()).deleteMany(new Document());;
+		database.getCollection(MongoCollection.EMOJI.getMongoName()).deleteMany(new Document());;
+		database.getCollection(MongoCollection.EMOTICONS.getMongoName()).deleteMany(new Document());;
+		database.getCollection(MongoCollection.HASHTAGS.getMongoName()).deleteMany(new Document());;
 	}
 	
 	private void insertLemmas(List<String> lemmas,SentimentEnum sentiment){
@@ -64,7 +65,7 @@ public class MongoDBDAO {
 			return;
 		}
 		List<Document> lemmasDocuments = createDocumentList(lemmas,sentiment);
-		database.getCollection(MongoCollection.TWEETS.name()).insertMany(lemmasDocuments);
+		database.getCollection(MongoCollection.TWEETS.getMongoName()).insertMany(lemmasDocuments);
 	}
 	
 	private void insertHashTags(List<String> hashtags,SentimentEnum sentiment){
@@ -72,7 +73,7 @@ public class MongoDBDAO {
 			return;
 		}
 		List<Document> hashtagsDocuments = createDocumentList(hashtags,sentiment);
-		database.getCollection(MongoCollection.HASHTAGS.name()).insertMany(hashtagsDocuments);
+		database.getCollection(MongoCollection.HASHTAGS.getMongoName()).insertMany(hashtagsDocuments);
 	}
 	
 	private void insertEmoji(List<String> emoji,SentimentEnum sentiment){
@@ -80,7 +81,7 @@ public class MongoDBDAO {
 			return;
 		}
 		List<Document> emojiDocuments = createDocumentList(emoji,sentiment);
-		database.getCollection(MongoCollection.EMOJI.name()).insertMany(emojiDocuments);
+		database.getCollection(MongoCollection.EMOJI.getMongoName()).insertMany(emojiDocuments);
 	}
 	
 	private void insertEmoticons(List<String> emoticons,SentimentEnum sentiment){
@@ -88,7 +89,7 @@ public class MongoDBDAO {
 			return;
 		}
 		List<Document> emoticonsDocuments = createDocumentList(emoticons,sentiment);
-		database.getCollection(MongoCollection.EMOTICONS.name()).insertMany(emoticonsDocuments);
+		database.getCollection(MongoCollection.EMOTICONS.getMongoName()).insertMany(emoticonsDocuments);
 	}
 	
 	
@@ -96,7 +97,8 @@ public class MongoDBDAO {
 		List<Document> result = new ArrayList<>();
 		
 		for(String word : words){
-			Document wordDoc = new Document("word",word).append("sentiment", sentiment.name());
+			ObjectId objId = new ObjectId();
+			Document wordDoc = new Document("objectid",objId.toString()).append("word",word).append("sentiment", sentiment.name());
 			result.add(wordDoc);
 		}
 		
@@ -127,7 +129,7 @@ public class MongoDBDAO {
 		if(!tweetExist){
 			System.out.println("MONGODB: tweets collection not exist, creating...");
 			ValidationOptions collOptions = new ValidationOptions().validator(
-			        Filters.and(Filters.exists("word"), Filters.exists("sentiment"),Filters.in("sentiment",SentimentEnum.toStringSet())));
+			        Filters.and(Filters.exists("objectid"), Filters.exists("word"), Filters.exists("sentiment"),Filters.in("sentiment",SentimentEnum.toStringSet())));
 			database.createCollection(MongoCollection.TWEETS.getMongoName(),
 			        new CreateCollectionOptions().validationOptions(collOptions));
 		}
@@ -135,7 +137,7 @@ public class MongoDBDAO {
 		if(!hashtagExist){
 			System.out.println("MONGODB: hashtags collection not exist, creating...");
 			ValidationOptions collOptions = new ValidationOptions().validator(
-			        Filters.and(Filters.exists("word"), Filters.exists("sentiment"),Filters.in("sentiment",SentimentEnum.toStringSet())));
+			        Filters.and(Filters.exists("objectid"), Filters.exists("word"), Filters.exists("sentiment"),Filters.in("sentiment",SentimentEnum.toStringSet())));
 			database.createCollection(MongoCollection.HASHTAGS.getMongoName(),
 			        new CreateCollectionOptions().validationOptions(collOptions));
 		}
@@ -143,7 +145,7 @@ public class MongoDBDAO {
 		if(!emoticonsExist){
 			System.out.println("MONGODB: emoticons collection not exist, creating...");
 			ValidationOptions collOptions = new ValidationOptions().validator(
-			        Filters.and(Filters.exists("word"), Filters.exists("sentiment"),Filters.in("sentiment",SentimentEnum.toStringSet())));
+			        Filters.and(Filters.exists("objectid"), Filters.exists("word"), Filters.exists("sentiment"),Filters.in("sentiment",SentimentEnum.toStringSet())));
 			database.createCollection(MongoCollection.EMOTICONS.getMongoName(),
 			        new CreateCollectionOptions().validationOptions(collOptions));
 		}
@@ -151,10 +153,77 @@ public class MongoDBDAO {
 		if(!emojiExist){
 			System.out.println("MONGODB: emoji collection not exist, creating...");
 			ValidationOptions collOptions = new ValidationOptions().validator(
-			        Filters.and(Filters.exists("word"), Filters.exists("sentiment"),Filters.in("sentiment",SentimentEnum.toStringSet())));
+			        Filters.and(Filters.exists("objectid"), Filters.exists("word"), Filters.exists("sentiment"),Filters.in("sentiment",SentimentEnum.toStringSet())));
 			database.createCollection(MongoCollection.EMOJI.getMongoName(),
 			        new CreateCollectionOptions().validationOptions(collOptions));
 		}
+	}
+	
+	
+	public static void intializeCollections(String user, String dbName,String password,String host,int port){
+		
+		// Creating Credentials
+		MongoCredential credential = MongoCredential.createCredential(user, dbName, password.toCharArray());
+
+		MongoClient mongo = MongoClients.create(MongoClientSettings.builder()
+				.applyToClusterSettings(builder -> builder.hosts(Arrays.asList(new ServerAddress(host, port))))
+				.credential(credential).build());
+		
+		MongoDatabase database = mongo.getDatabase(dbName);
+
+		boolean tweetExist = false;
+		boolean hashtagExist = false;
+		boolean emojiExist = false;
+		boolean emoticonsExist = false;
+		
+		for (String name : database.listCollectionNames()) {
+			if(name.equals(MongoCollection.TWEETS.getMongoName())){
+				tweetExist = true;
+			}
+			else if(name.equals(MongoCollection.HASHTAGS.getMongoName())){
+				hashtagExist = true;
+			}
+			else if(name.equals(MongoCollection.EMOTICONS.getMongoName())){
+				emoticonsExist = true;
+			}
+			else if(name.equals(MongoCollection.EMOJI.getMongoName())){
+				emojiExist = true;
+			}
+		}
+		
+		if(!tweetExist){
+			System.out.println("MONGODB: tweets collection not exist, creating...");
+			ValidationOptions collOptions = new ValidationOptions().validator(
+			        Filters.and(Filters.exists("objectid"), Filters.exists("word"), Filters.exists("sentiment"),Filters.in("sentiment",SentimentEnum.toStringSet())));
+			database.createCollection(MongoCollection.TWEETS.getMongoName(),
+			        new CreateCollectionOptions().validationOptions(collOptions));
+		}
+		
+		if(!hashtagExist){
+			System.out.println("MONGODB: hashtags collection not exist, creating...");
+			ValidationOptions collOptions = new ValidationOptions().validator(
+			        Filters.and(Filters.exists("objectid"), Filters.exists("word"), Filters.exists("sentiment"),Filters.in("sentiment",SentimentEnum.toStringSet())));
+			database.createCollection(MongoCollection.HASHTAGS.getMongoName(),
+			        new CreateCollectionOptions().validationOptions(collOptions));
+		}
+		
+		if(!emoticonsExist){
+			System.out.println("MONGODB: emoticons collection not exist, creating...");
+			ValidationOptions collOptions = new ValidationOptions().validator(
+			        Filters.and(Filters.exists("objectid"), Filters.exists("word"), Filters.exists("sentiment"),Filters.in("sentiment",SentimentEnum.toStringSet())));
+			database.createCollection(MongoCollection.EMOTICONS.getMongoName(),
+			        new CreateCollectionOptions().validationOptions(collOptions));
+		}
+		
+		if(!emojiExist){
+			System.out.println("MONGODB: emoji collection not exist, creating...");
+			ValidationOptions collOptions = new ValidationOptions().validator(
+			        Filters.and(Filters.exists("objectid"), Filters.exists("word"), Filters.exists("sentiment"),Filters.in("sentiment",SentimentEnum.toStringSet())));
+			database.createCollection(MongoCollection.EMOJI.getMongoName(),
+			        new CreateCollectionOptions().validationOptions(collOptions));
+		}
+		
+		mongo.close();
 	}
 	
 
