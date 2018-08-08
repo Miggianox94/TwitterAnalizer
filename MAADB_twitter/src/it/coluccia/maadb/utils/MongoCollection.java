@@ -1,14 +1,16 @@
 package it.coluccia.maadb.utils;
 
-import java.util.HashSet;
-import java.util.Set;
-
 public enum MongoCollection {
 	TWEETS("tweets"),
     HASHTAGS("hashtags"),
     EMOTICONS("emoticons"),
-    EMOJI("emoji");
+    EMOJI("emoji"),
 	
+	TWEETS_REDUCED("tweets_reduced"),
+    HASHTAGS_REDUCED("hashtags_reduced"),
+    EMOTICONS_REDUCED("emoticons_reduced"),
+    EMOJI_REDUCED("emoji_reduced");
+    
 	private String mongoName;
 	
 	private MongoCollection(String mongoName){

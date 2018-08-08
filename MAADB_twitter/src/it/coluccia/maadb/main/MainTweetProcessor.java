@@ -1,5 +1,7 @@
 package it.coluccia.maadb.main;
 
+import java.awt.Color;
+import java.awt.Dimension;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -7,6 +9,7 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -19,12 +22,21 @@ import javax.json.JsonReader;
 
 import org.apache.commons.io.FileUtils;
 
+import com.kennycason.kumo.CollisionMode;
+import com.kennycason.kumo.WordCloud;
+import com.kennycason.kumo.WordFrequency;
+import com.kennycason.kumo.bg.PixelBoundryBackground;
+import com.kennycason.kumo.font.scale.LinearFontScalar;
+import com.kennycason.kumo.nlp.FrequencyAnalyzer;
+import com.kennycason.kumo.palette.ColorPalette;
+
 import edu.stanford.nlp.simple.Document;
 import edu.stanford.nlp.simple.Sentence;
 import edu.stanford.nlp.util.StringUtils;
 import it.coluccia.maadb.dataaccess.MongoDBDAO;
 import it.coluccia.maadb.dataaccess.OracleDAO;
 import it.coluccia.maadb.utils.Constants;
+import it.coluccia.maadb.utils.MongoCollection;
 import it.coluccia.maadb.utils.SentimentEnum;
 
 public class MainTweetProcessor {
@@ -98,8 +110,15 @@ public class MainTweetProcessor {
 				System.out.println("---------- STARTING PIPELINE FOR TWEET : " + sentence);
 				executePipeline(sentence, sentimentChosed,persistMode);
 			}
-			// TODO:filterResults();
-			// TODO:generateWordsCloud(sentimentChosed);
+			if(persistMode == 2 || persistMode == 3){
+				mongoDbDao.executeMapReduce(MongoCollection.TWEETS,MongoCollection.TWEETS_REDUCED);
+				mongoDbDao.executeMapReduce(MongoCollection.HASHTAGS,MongoCollection.HASHTAGS_REDUCED);
+				mongoDbDao.executeMapReduce(MongoCollection.EMOTICONS,MongoCollection.EMOTICONS_REDUCED);
+				mongoDbDao.executeMapReduce(MongoCollection.EMOJI,MongoCollection.EMOJI_REDUCED);
+			}
+			
+			// TODO: filterResult(sentimentChosed,persistMode);
+			// TODO:generateWordsCloud(sentimentChosed,persistMode);
 		} catch (Exception e) {
 			System.out.println("!!!! ERROR OCCURRED --> ABORT !!!!");
 			e.printStackTrace();
@@ -336,6 +355,23 @@ public class MainTweetProcessor {
 		}
 		
 		System.out.println("STEP10-END: persist");
+	}
+	
+	
+	private static void generateWordsCloud(SentimentEnum sentiment,int persistMode) throws IOException{
+		final FrequencyAnalyzer frequencyAnalyzer = new FrequencyAnalyzer();
+		frequencyAnalyzer.setWordFrequenciesToReturn(300);
+		frequencyAnalyzer.setMinWordLength(2);
+
+		final List<WordFrequency> wordFrequencies = generateListWordFrequencies(persistMode);
+		final Dimension dimension = new Dimension(500, 312);
+		final WordCloud wordCloud = new WordCloud(dimension, CollisionMode.PIXEL_PERFECT);
+		wordCloud.setPadding(2);
+		wordCloud.setBackground(new PixelBoundryBackground(System.getProperty("user.dir") + "/resources/wordclouds/"+(new Date())+"/"+sentiment.name()));
+		wordCloud.setColorPalette(new ColorPalette(new Color(0x4055F1), new Color(0x408DF1), new Color(0x40AAF1), new Color(0x40C5F1), new Color(0x40D3F1), new Color(0xFFFFFF)));
+		wordCloud.setFontScalar(new LinearFontScalar(10, 40));
+		wordCloud.build(wordFrequencies);
+		wordCloud.writeToFile("kumo-core/output/whale_wordcloud_small.png");
 	}
 
 }

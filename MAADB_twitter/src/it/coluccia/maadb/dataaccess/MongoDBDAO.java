@@ -7,6 +7,9 @@ import java.util.List;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 
+import com.mongodb.DB;
+import com.mongodb.MapReduceCommand;
+import com.mongodb.Mongo;
 import com.mongodb.MongoClientSettings;
 import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
@@ -17,6 +20,7 @@ import com.mongodb.client.model.CreateCollectionOptions;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.ValidationOptions;
 
+import it.coluccia.maadb.utils.Constants;
 import it.coluccia.maadb.utils.MongoCollection;
 import it.coluccia.maadb.utils.SentimentEnum;
 
@@ -58,6 +62,13 @@ public class MongoDBDAO {
 		database.getCollection(MongoCollection.EMOJI.getMongoName()).deleteMany(new Document());;
 		database.getCollection(MongoCollection.EMOTICONS.getMongoName()).deleteMany(new Document());;
 		database.getCollection(MongoCollection.HASHTAGS.getMongoName()).deleteMany(new Document());;
+	}
+	
+	@SuppressWarnings("deprecation")
+	public void executeMapReduce(MongoCollection inputCollection, MongoCollection outputCollection){
+		System.out.println("MONGODB: Executing mapreduce for collection "+ inputCollection.getMongoName());
+		DB db = new Mongo().getDB(database.getName());
+		new MapReduceCommand(db.getCollection(inputCollection.getMongoName()), Constants.mapFunction, Constants.reduceFunction,outputCollection.getMongoName(), MapReduceCommand.OutputType.REPLACE, null);
 	}
 	
 	private void insertLemmas(List<String> lemmas,SentimentEnum sentiment){

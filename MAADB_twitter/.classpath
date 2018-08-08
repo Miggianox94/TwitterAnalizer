@@ -18,5 +18,7 @@
 	<classpathentry kind="lib" path="libs/mongodb-driver-sync-3.8.0.jar"/>
 	<classpathentry kind="lib" path="libs/mongodb-driver-3.8.0.jar"/>
 	<classpathentry kind="lib" path="libs/mongo-java-driver-3.8.0.jar"/>
+	<classpathentry kind="lib" path="libs/kumo-core-1.13.jar"/>
+	<classpathentry kind="lib" path="libs/kumo-api-1.13.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
