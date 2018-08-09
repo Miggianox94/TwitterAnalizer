@@ -398,20 +398,22 @@ public class MainTweetProcessor {
 		wordCloud.setColorPalette(new ColorPalette(new Color(0x4055F1), new Color(0x408DF1), new Color(0x40AAF1), new Color(0x40C5F1), new Color(0x40D3F1), new Color(0xFFFFFF)));
 		wordCloud.setFontScalar(new LinearFontScalar(10, 40));
 		
+		String toDateString = new Date().toString();
+		
 		if(persistMode == 1){
 			wordCloud.build(wordFrequenciesOracle);
-			wordCloud.writeToFile(WORDS_CLOUDS_PATH + "/outputWordClouds/Oracle/"+(new Date())+"/"+sentiment.name());
+			wordCloud.writeToFile(WORDS_CLOUDS_PATH + "/outputWordClouds/Oracle/"+toDateString+"/"+sentiment.name());
 		}
 		else if(persistMode == 2){
 			wordCloud.build(wordFrequenciesMongo);
-			wordCloud.writeToFile(WORDS_CLOUDS_PATH + "/outputWordClouds/Mongo/"+(new Date())+"/"+sentiment.name());
+			wordCloud.writeToFile(WORDS_CLOUDS_PATH + "/outputWordClouds/Mongo/"+toDateString+"/"+sentiment.name());
 		}
 		else{
 			//persistMode == 3
 			wordCloud.build(wordFrequenciesOracle);
-			wordCloud.writeToFile(WORDS_CLOUDS_PATH + "/outputWordClouds/Oracle/"+(new Date())+"/"+sentiment.name());
+			wordCloud.writeToFile(WORDS_CLOUDS_PATH + "/outputWordClouds/Oracle/"+toDateString+"/"+sentiment.name());
 			wordCloud.build(wordFrequenciesMongo);
-			wordCloud.writeToFile(WORDS_CLOUDS_PATH + "/outputWordClouds/Mongo/"+(new Date())+"/"+sentiment.name());
+			wordCloud.writeToFile(WORDS_CLOUDS_PATH + "/outputWordClouds/Mongo/"+toDateString+"/"+sentiment.name());
 		}
 		
 		System.out.println("###### WORLD CLOUDS GENERATED ######");
