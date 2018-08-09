@@ -47,7 +47,7 @@ import it.coluccia.maadb.utils.SentimentEnum;
 public class MainTweetProcessor {
 
 	private static final String TWEET_PATH = System.getProperty("user.dir") + "/resources/Tweets/";
-	private static final String WORDS_CLOUDS_PATH = System.getProperty("user.dir") + "/resources/wordsClouds/";
+	private static final String WORDS_CLOUDS_PATH = System.getProperty("user.dir") + "\\resources\\wordsClouds";
 	private static final String WORDS_CLOUD_TEMPLATE_IMAGE = "duke_resized_template.png";
 	
 	public static final int EMOJI_LIMIT = 50;
@@ -64,6 +64,7 @@ public class MainTweetProcessor {
 	private static String mongoUser = null;
 	private static String mongoPassword = null;
 	private static String mongoDbName = null;
+	private static int onlyWordClouds = 0;
 	
 	private static MongoDBDAO mongoDbDao = null;
 
@@ -76,10 +77,11 @@ public class MainTweetProcessor {
 	 */
 	public static void main(String[] args) {
 
-		if (args.length != 10) {
-			System.out.println("!!!! YOU MUST PASS 4 PARAMETERS --> ABORT !!!!");
+		if (args.length != 11) {
+			System.out.println("!!!! YOU MUST PASS 11 PARAMETERS --> ABORT !!!!");
 			System.exit(1);
 		}
+		System.setProperty("file.encoding", "UTF-8");
 
 		jdbcUrl = args[0];
 		usernameOracle = args[1];
@@ -95,6 +97,9 @@ public class MainTweetProcessor {
 		mongoPassword = args[7];
 		mongoDbName = args[8];
 		mongoPort = Integer.parseInt(args[9]);
+		
+		onlyWordClouds = Integer.parseInt(args[10]);
+		
 
 		if (!SentimentEnum.getIds().contains(sentimentCode)) {
 			throw new IllegalArgumentException("!!!! The sentimentID passed is not valid --> ABORT !!!!");
@@ -115,6 +120,12 @@ public class MainTweetProcessor {
 		System.out.println("############## TWEET PROCESS STARTED : " + sentimentChosed + " ##############");
 
 		try {
+			if(onlyWordClouds == 1){
+				System.out.println("############## WORDCLOUDS ONLY MODE : " + sentimentChosed + " ##############");
+				generateWordsCloud(sentimentChosed,persistMode);
+				System.out.println("############## TWEET PROCESS COMPLETED : " + sentimentChosed + " ##############");
+				return;
+			}
 			String fileString = FileUtils.readFileToString(new File(TWEET_PATH + sentimentChosed.getFileName()),
 					StandardCharsets.UTF_8);
 			String[] tweetSentences = fileString.split("\\n");
@@ -372,10 +383,6 @@ public class MainTweetProcessor {
 	private static void generateWordsCloud(SentimentEnum sentiment,int persistMode) throws IOException, SQLException{
 		System.out.println("###### GENERATING WORLD CLOUDS ######");
 		
-		final FrequencyAnalyzer frequencyAnalyzer = new FrequencyAnalyzer();
-		frequencyAnalyzer.setWordFrequenciesToReturn(300);
-		frequencyAnalyzer.setMinWordLength(2);
-		
 		List<WordFrequency> wordFrequenciesOracle = null;
 		List<WordFrequency> wordFrequenciesMongo = null;
 
@@ -393,26 +400,27 @@ public class MainTweetProcessor {
 		final Dimension dimension = new Dimension(500, 312);
 		final WordCloud wordCloud = new WordCloud(dimension, CollisionMode.PIXEL_PERFECT);
 		wordCloud.setPadding(2);
-		wordCloud.setBackground(new PixelBoundryBackground(WORDS_CLOUDS_PATH + "/templateImages" + WORDS_CLOUD_TEMPLATE_IMAGE));
+		wordCloud.setBackground(new PixelBoundryBackground(WORDS_CLOUDS_PATH + "/templateImages/" + WORDS_CLOUD_TEMPLATE_IMAGE));
 		wordCloud.setColorPalette(new ColorPalette(new Color(0x4055F1), new Color(0x408DF1), new Color(0x40AAF1), new Color(0x40C5F1), new Color(0x40D3F1), new Color(0xFFFFFF)));
 		wordCloud.setFontScalar(new LinearFontScalar(10, 40));
 		
-		String toDateString = new Date().toString();
+		long toDateString = new Date().getTime();
+		String fileName = "wordClouds_"+toDateString+""+sentiment.name()+".png";
 		
 		if(persistMode == 1){
 			wordCloud.build(wordFrequenciesOracle);
-			wordCloud.writeToFile(WORDS_CLOUDS_PATH + "/outputWordClouds/Oracle/"+toDateString+"/"+sentiment.name());
+			wordCloud.writeToFile(WORDS_CLOUDS_PATH + "/outputWordClouds/Oracle/"+fileName);
 		}
 		else if(persistMode == 2){
 			wordCloud.build(wordFrequenciesMongo);
-			wordCloud.writeToFile(WORDS_CLOUDS_PATH + "/outputWordClouds/Mongo/"+toDateString+"/"+sentiment.name());
+			wordCloud.writeToFile(WORDS_CLOUDS_PATH + "/outputWordClouds/Mongo/"+fileName);
 		}
 		else{
 			//persistMode == 3
 			wordCloud.build(wordFrequenciesOracle);
-			wordCloud.writeToFile(WORDS_CLOUDS_PATH + "/outputWordClouds/Oracle/"+toDateString+"/"+sentiment.name());
+			wordCloud.writeToFile(WORDS_CLOUDS_PATH + "/outputWordClouds/Oracle/"+fileName);
 			wordCloud.build(wordFrequenciesMongo);
-			wordCloud.writeToFile(WORDS_CLOUDS_PATH + "/outputWordClouds/Mongo/"+toDateString+"/"+sentiment.name());
+			wordCloud.writeToFile(WORDS_CLOUDS_PATH + "/outputWordClouds/Mongo/"+fileName);
 		}
 		
 		System.out.println("###### WORLD CLOUDS GENERATED ######");

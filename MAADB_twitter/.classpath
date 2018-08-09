@@ -20,5 +20,10 @@
 	<classpathentry kind="lib" path="libs/mongo-java-driver-3.8.0.jar"/>
 	<classpathentry kind="lib" path="libs/kumo-core-1.13.jar"/>
 	<classpathentry kind="lib" path="libs/kumo-api-1.13.jar"/>
+	<classpathentry kind="lib" path="libs/commons-lang3-3.4.jar"/>
+	<classpathentry kind="lib" path="libs/jsoup-1.8.2.jar"/>
+	<classpathentry kind="lib" path="libs/rtree-0.8.0.1.jar"/>
+	<classpathentry kind="lib" path="libs/jcommander-1.48.jar"/>
+	<classpathentry kind="lib" path="libs/kumo-cli-1.13.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

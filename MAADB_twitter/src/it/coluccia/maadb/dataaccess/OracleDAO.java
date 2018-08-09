@@ -75,7 +75,7 @@ public class OracleDAO {
 	public List<Emoji> getMostFreqEmoji() throws SQLException{
 		Statement statement = null;
 
-		String selectSQL = "SELECT WORD,FREQUENCY FROM EMOJI ORDER BY FREQUENCY DESC LIMIT 0 ,  "+MainTweetProcessor.EMOJI_LIMIT;
+		String selectSQL = "SELECT WORD,FREQUENCY FROM EMOJI ORDER BY FREQUENCY DESC FETCH FIRST "+MainTweetProcessor.EMOJI_LIMIT+ " ROWS ONLY";
 		
 		List<Emoji> result = new ArrayList<Emoji>();
 
@@ -101,7 +101,6 @@ public class OracleDAO {
 					e.printStackTrace();
 				}
 			}
-			commitConnection();
 
 		}
 		
@@ -111,7 +110,7 @@ public class OracleDAO {
 	public List<Emoticon> getMostFreqEmoticon() throws SQLException{
 		Statement statement = null;
 
-		String selectSQL = "SELECT WORD,FREQUENCY FROM EMOTICON ORDER BY FREQUENCY DESC LIMIT 0 ,  "+MainTweetProcessor.EMOTICON_LIMIT;
+		String selectSQL = "SELECT WORD,FREQUENCY FROM EMOTICON ORDER BY FREQUENCY DESC FETCH FIRST "+MainTweetProcessor.EMOTICON_LIMIT+ " ROWS ONLY";
 		
 		List<Emoticon> result = new ArrayList<>();
 
@@ -137,7 +136,6 @@ public class OracleDAO {
 					e.printStackTrace();
 				}
 			}
-			commitConnection();
 
 		}
 		
@@ -147,7 +145,7 @@ public class OracleDAO {
 	public List<HashTag> getMostFreqHashTag() throws SQLException{
 		Statement statement = null;
 
-		String selectSQL = "SELECT WORD,FREQUENCY FROM HASHTAG ORDER BY FREQUENCY DESC LIMIT 0 ,  "+MainTweetProcessor.HASHTAG_LIMIT;
+		String selectSQL = "SELECT WORD,FREQUENCY FROM HASHTAG ORDER BY FREQUENCY DESC FETCH FIRST "+MainTweetProcessor.HASHTAG_LIMIT+ " ROWS ONLY";
 		
 		List<HashTag> result = new ArrayList<>();
 
@@ -173,7 +171,6 @@ public class OracleDAO {
 					e.printStackTrace();
 				}
 			}
-			commitConnection();
 
 		}
 		
@@ -183,7 +180,7 @@ public class OracleDAO {
 	public List<Tweet> getMostFreqTweet() throws SQLException{
 		Statement statement = null;
 
-		String selectSQL = "SELECT WORD,FREQUENCY FROM TWEET ORDER BY FREQUENCY DESC LIMIT 0 ,  "+MainTweetProcessor.TWEET_LIMIT;
+		String selectSQL = "SELECT WORD,FREQUENCY FROM TWEET ORDER BY FREQUENCY DESC FETCH FIRST "+MainTweetProcessor.TWEET_LIMIT+ " ROWS ONLY";
 		
 		List<Tweet> result = new ArrayList<>();
 
@@ -209,7 +206,6 @@ public class OracleDAO {
 					e.printStackTrace();
 				}
 			}
-			commitConnection();
 
 		}
 		
