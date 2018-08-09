@@ -384,12 +384,12 @@ public class MainTweetProcessor {
 			wordFrequenciesOracle = generateListWordFrequenciesOracle(sentiment);
 		}
 		else if(persistMode == 2){
-			//TODO: wordFrequenciesMongo = generateListWordFrequenciesMongo(sentiment);
+			wordFrequenciesMongo = generateListWordFrequenciesMongo(sentiment);
 		}
 		else{
 			//persistMode == 3
 			wordFrequenciesOracle = generateListWordFrequenciesOracle(sentiment);
-			//TODO: wordFrequenciesMongo = generateListWordFrequenciesMongo(sentiment);
+			wordFrequenciesMongo = generateListWordFrequenciesMongo(sentiment);
 		}
 		final Dimension dimension = new Dimension(500, 312);
 		final WordCloud wordCloud = new WordCloud(dimension, CollisionMode.PIXEL_PERFECT);
@@ -425,6 +425,46 @@ public class MainTweetProcessor {
 		List<Emoticon> mostFrequentEmoticon = oracleDao.getMostFreqEmoticon();
 		List<HashTag> mostFrequentHashTag = oracleDao.getMostFreqHashTag();
 		List<Tweet>  mostFrequentTweet = oracleDao.getMostFreqTweet();
+		
+		List<WordFrequency> result = new ArrayList<>();
+		int counter = 0;
+		for(Emoji emoji : mostFrequentEmoji){
+			if(counter > EMOJI_LIMIT){
+				break;
+			}
+			WordFrequency item = new WordFrequency(emoji.getWord(),emoji.getFrequency());
+			result.add(item);
+		}
+		for(Emoticon emoticon : mostFrequentEmoticon){
+			if(counter > EMOTICON_LIMIT){
+				break;
+			}
+			WordFrequency item = new WordFrequency(emoticon.getWord(),emoticon.getFrequency());
+			result.add(item);
+		}
+		for(HashTag hashTag : mostFrequentHashTag){
+			if(counter > HASHTAG_LIMIT){
+				break;
+			}
+			WordFrequency item = new WordFrequency(hashTag.getWord(),hashTag.getFrequency());
+			result.add(item);
+		}
+		for(Tweet tweet : mostFrequentTweet){
+			if(counter > TWEET_LIMIT){
+				break;
+			}
+			WordFrequency item = new WordFrequency(tweet.getWord(),tweet.getFrequency());
+			result.add(item);
+		}
+		
+		return result;
+	}
+	
+	private static List<WordFrequency> generateListWordFrequenciesMongo(SentimentEnum sentiment) throws SQLException{
+		List<Emoji> mostFrequentEmoji = mongoDbDao.getMostFreqEmoji();
+		List<Emoticon> mostFrequentEmoticon = mongoDbDao.getMostFreqEmoticon();
+		List<HashTag> mostFrequentHashTag = mongoDbDao.getMostFreqHashTag();
+		List<Tweet>  mostFrequentTweet = mongoDbDao.getMostFreqTweet();
 		
 		List<WordFrequency> result = new ArrayList<>();
 		int counter = 0;

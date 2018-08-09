@@ -13,13 +13,20 @@ import com.mongodb.Mongo;
 import com.mongodb.MongoClientSettings;
 import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.CreateCollectionOptions;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Sorts;
 import com.mongodb.client.model.ValidationOptions;
 
+import it.coluccia.maadb.datamodel.Emoji;
+import it.coluccia.maadb.datamodel.Emoticon;
+import it.coluccia.maadb.datamodel.HashTag;
+import it.coluccia.maadb.datamodel.Tweet;
+import it.coluccia.maadb.main.MainTweetProcessor;
 import it.coluccia.maadb.utils.Constants;
 import it.coluccia.maadb.utils.MongoCollection;
 import it.coluccia.maadb.utils.SentimentEnum;
@@ -80,6 +87,54 @@ public class MongoDBDAO {
 		System.out.println("MONGODB: Executing mapreduce for collection "+ inputCollection.getMongoName());
 		DB db = new Mongo().getDB(database.getName());
 		new MapReduceCommand(db.getCollection(inputCollection.getMongoName()), Constants.mapFunction, Constants.reduceFunction,outputCollection.getMongoName(), MapReduceCommand.OutputType.REPLACE, null);
+	}
+	
+	public List<Emoji> getMostFreqEmoji(){
+		List<Emoji> result = new ArrayList<>();
+		FindIterable<Document> results = database.getCollection(MongoCollection.EMOJI.getMongoName()).find().limit( MainTweetProcessor.EMOJI_LIMIT ).sort(Sorts.descending("frequency"));
+        for (Document doc : results) {
+        	Emoji item = new Emoji();
+        	item.setWord(doc.getString("word"));
+        	item.setFrequency(doc.getInteger("frequency"));
+        	result.add(item);
+        }
+        return result;
+	}
+	
+	public List<Emoticon> getMostFreqEmoticon(){
+		List<Emoticon> result = new ArrayList<>();
+		FindIterable<Document> results = database.getCollection(MongoCollection.EMOTICONS.getMongoName()).find().limit( MainTweetProcessor.EMOTICON_LIMIT ).sort(Sorts.descending("frequency"));
+        for (Document doc : results) {
+        	Emoticon item = new Emoticon();
+        	item.setWord(doc.getString("word"));
+        	item.setFrequency(doc.getInteger("frequency"));
+        	result.add(item);
+        }
+        return result;
+	}
+	
+	public List<HashTag> getMostFreqHashTag(){
+		List<HashTag> result = new ArrayList<>();
+		FindIterable<Document> results = database.getCollection(MongoCollection.HASHTAGS.getMongoName()).find().limit( MainTweetProcessor.HASHTAG_LIMIT ).sort(Sorts.descending("frequency"));
+        for (Document doc : results) {
+        	HashTag item = new HashTag();
+        	item.setWord(doc.getString("word"));
+        	item.setFrequency(doc.getInteger("frequency"));
+        	result.add(item);
+        }
+        return result;
+	}
+	
+	public List<Tweet> getMostFreqTweet(){
+		List<Tweet> result = new ArrayList<>();
+		FindIterable<Document> results = database.getCollection(MongoCollection.TWEETS.getMongoName()).find().limit( MainTweetProcessor.TWEET_LIMIT ).sort(Sorts.descending("frequency"));
+        for (Document doc : results) {
+        	Tweet item = new Tweet();
+        	item.setWord(doc.getString("word"));
+        	item.setFrequency(doc.getInteger("frequency"));
+        	result.add(item);
+        }
+        return result;
 	}
 	
 	private void tryToRestoreConnection() {
