@@ -434,27 +434,34 @@ public class MainTweetProcessor {
 			}
 			WordFrequency item = new WordFrequency(emoji.getWord(),emoji.getFrequency());
 			result.add(item);
+			counter++;
 		}
+		counter = 0;
 		for(Emoticon emoticon : mostFrequentEmoticon){
 			if(counter > EMOTICON_LIMIT){
 				break;
 			}
 			WordFrequency item = new WordFrequency(emoticon.getWord(),emoticon.getFrequency());
 			result.add(item);
+			counter++;
 		}
+		counter = 0;
 		for(HashTag hashTag : mostFrequentHashTag){
 			if(counter > HASHTAG_LIMIT){
 				break;
 			}
 			WordFrequency item = new WordFrequency(hashTag.getWord(),hashTag.getFrequency());
 			result.add(item);
+			counter++;
 		}
+		counter = 0;
 		for(Tweet tweet : mostFrequentTweet){
 			if(counter > TWEET_LIMIT){
 				break;
 			}
 			WordFrequency item = new WordFrequency(tweet.getWord(),tweet.getFrequency());
 			result.add(item);
+			counter++;
 		}
 		
 		return result;
@@ -474,27 +481,34 @@ public class MainTweetProcessor {
 			}
 			WordFrequency item = new WordFrequency(emoji.getWord(),emoji.getFrequency());
 			result.add(item);
+			counter++;
 		}
+		counter = 0;
 		for(Emoticon emoticon : mostFrequentEmoticon){
 			if(counter > EMOTICON_LIMIT){
 				break;
 			}
 			WordFrequency item = new WordFrequency(emoticon.getWord(),emoticon.getFrequency());
 			result.add(item);
+			counter++;
 		}
+		counter = 0;
 		for(HashTag hashTag : mostFrequentHashTag){
 			if(counter > HASHTAG_LIMIT){
 				break;
 			}
 			WordFrequency item = new WordFrequency(hashTag.getWord(),hashTag.getFrequency());
 			result.add(item);
+			counter++;
 		}
+		counter = 0;
 		for(Tweet tweet : mostFrequentTweet){
 			if(counter > TWEET_LIMIT){
 				break;
 			}
 			WordFrequency item = new WordFrequency(tweet.getWord(),tweet.getFrequency());
 			result.add(item);
+			counter++;
 		}
 		
 		return result;
