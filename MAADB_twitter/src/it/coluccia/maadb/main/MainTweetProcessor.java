@@ -129,7 +129,6 @@ public class MainTweetProcessor {
 				mongoDbDao.executeMapReduce(MongoCollection.EMOJI,MongoCollection.EMOJI_REDUCED);
 			}
 			
-			// TODO: filterResult(sentimentChosed,persistMode);
 			generateWordsCloud(sentimentChosed,persistMode);
 		} catch (Exception e) {
 			System.out.println("!!!! ERROR OCCURRED --> ABORT !!!!");
