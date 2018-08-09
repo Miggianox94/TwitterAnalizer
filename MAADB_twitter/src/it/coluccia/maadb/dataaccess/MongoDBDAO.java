@@ -26,10 +26,21 @@ import it.coluccia.maadb.utils.SentimentEnum;
 
 public class MongoDBDAO {
 
-	MongoClient mongo;
-	MongoDatabase database;
+	private MongoClient mongo;
+	private MongoDatabase database;
+	private String host;
+	private int port;
+	private String user;
+	private String password;
+	private String dbName;
 
 	public MongoDBDAO(String host, int port, String user, String password, String dbName) {
+		
+		this.host = host;
+		this.port = port;
+		this.user = user;
+		this.password = password;
+		this.dbName = dbName;
 		
 		// Creating Credentials
 		MongoCredential credential = MongoCredential.createCredential(user, dbName, password.toCharArray());
@@ -71,12 +82,36 @@ public class MongoDBDAO {
 		new MapReduceCommand(db.getCollection(inputCollection.getMongoName()), Constants.mapFunction, Constants.reduceFunction,outputCollection.getMongoName(), MapReduceCommand.OutputType.REPLACE, null);
 	}
 	
+	private void tryToRestoreConnection() {
+		System.out.println("Trying to restore mongo connection...");
+		try {
+			Thread.sleep(3000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		// Creating Credentials
+		MongoCredential credential = MongoCredential.createCredential(user, dbName, password.toCharArray());
+
+		mongo = MongoClients.create(MongoClientSettings.builder()
+				.applyToClusterSettings(builder -> builder.hosts(Arrays.asList(new ServerAddress(host, port))))
+				.credential(credential).build());
+
+		// Accessing the database
+		database = mongo.getDatabase(dbName);
+		System.out.println("MONGODB: Connection to database correctly restored");
+	}
+	
 	private void insertLemmas(List<String> lemmas,SentimentEnum sentiment){
 		if(lemmas.isEmpty()){
 			return;
 		}
 		List<Document> lemmasDocuments = createDocumentList(lemmas,sentiment);
-		database.getCollection(MongoCollection.TWEETS.getMongoName()).insertMany(lemmasDocuments);
+		try {
+			database.getCollection(MongoCollection.TWEETS.getMongoName()).insertMany(lemmasDocuments);
+		} catch (Exception e) {
+			tryToRestoreConnection();
+			database.getCollection(MongoCollection.TWEETS.getMongoName()).insertMany(lemmasDocuments);
+		}
 	}
 	
 	private void insertHashTags(List<String> hashtags,SentimentEnum sentiment){
@@ -84,7 +119,12 @@ public class MongoDBDAO {
 			return;
 		}
 		List<Document> hashtagsDocuments = createDocumentList(hashtags,sentiment);
-		database.getCollection(MongoCollection.HASHTAGS.getMongoName()).insertMany(hashtagsDocuments);
+		try {
+			database.getCollection(MongoCollection.HASHTAGS.getMongoName()).insertMany(hashtagsDocuments);
+		} catch (Exception e) {
+			tryToRestoreConnection();
+			database.getCollection(MongoCollection.HASHTAGS.getMongoName()).insertMany(hashtagsDocuments);
+		}
 	}
 	
 	private void insertEmoji(List<String> emoji,SentimentEnum sentiment){
@@ -92,7 +132,12 @@ public class MongoDBDAO {
 			return;
 		}
 		List<Document> emojiDocuments = createDocumentList(emoji,sentiment);
-		database.getCollection(MongoCollection.EMOJI.getMongoName()).insertMany(emojiDocuments);
+		try {
+			database.getCollection(MongoCollection.EMOJI.getMongoName()).insertMany(emojiDocuments);
+		} catch (Exception e) {
+			tryToRestoreConnection();
+			database.getCollection(MongoCollection.EMOJI.getMongoName()).insertMany(emojiDocuments);
+		}
 	}
 	
 	private void insertEmoticons(List<String> emoticons,SentimentEnum sentiment){
@@ -100,7 +145,12 @@ public class MongoDBDAO {
 			return;
 		}
 		List<Document> emoticonsDocuments = createDocumentList(emoticons,sentiment);
-		database.getCollection(MongoCollection.EMOTICONS.getMongoName()).insertMany(emoticonsDocuments);
+		try {
+			database.getCollection(MongoCollection.EMOTICONS.getMongoName()).insertMany(emoticonsDocuments);
+		} catch (Exception e) {
+			tryToRestoreConnection();
+			database.getCollection(MongoCollection.EMOTICONS.getMongoName()).insertMany(emoticonsDocuments);
+		}
 	}
 	
 	

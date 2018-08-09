@@ -5,12 +5,15 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
 
 import it.coluccia.maadb.datamodel.Emoji;
 import it.coluccia.maadb.datamodel.Emoticon;
 import it.coluccia.maadb.datamodel.HashTag;
 import it.coluccia.maadb.datamodel.Tweet;
+import it.coluccia.maadb.main.MainTweetProcessor;
 import it.coluccia.maadb.utils.SentimentEnum;
 
 public class OracleDAO {
@@ -58,13 +61,159 @@ public class OracleDAO {
 					updateEmoticonFrequency(existingEmoticon);
 				}
 			}
-			commitConnection();
 		} catch (Exception e) {
 			e.printStackTrace();
 			rollbackConnection();
 			System.out.println("!!!! CONNECTION TO ORACLE DB ROLLBACKED !!!!");
 			throw new Exception(e.getMessage());
 		}
+		finally{
+			commitConnection();
+		}
+	}
+	
+	public List<Emoji> getMostFreqEmoji() throws SQLException{
+		Statement statement = null;
+
+		String selectSQL = "SELECT WORD,FREQUENCY FROM EMOJI ORDER BY FREQUENCY DESC LIMIT 0 ,  "+MainTweetProcessor.EMOJI_LIMIT;
+		
+		List<Emoji> result = new ArrayList<Emoji>();
+
+		try {
+			statement = connection.createStatement();
+			ResultSet rs = statement.executeQuery(selectSQL);
+			while (rs.next()) {
+
+				Emoji item = new Emoji();
+				item.setWord(rs.getString("WORD"));
+				item.setFrequency(rs.getInt("FREQUENCY"));
+				result.add(item);
+			}
+
+		} finally {
+
+			if (statement != null) {
+				try {
+					statement.close();
+				} catch (SQLException e) {
+					System.out.println(
+							"--!!-- ATTENTION: preparedStatement not closed due to an unexpected error. Workflow can continue ");
+					e.printStackTrace();
+				}
+			}
+			commitConnection();
+
+		}
+		
+		return result;
+	}
+	
+	public List<Emoticon> getMostFreqEmoticon() throws SQLException{
+		Statement statement = null;
+
+		String selectSQL = "SELECT WORD,FREQUENCY FROM EMOTICON ORDER BY FREQUENCY DESC LIMIT 0 ,  "+MainTweetProcessor.EMOTICON_LIMIT;
+		
+		List<Emoticon> result = new ArrayList<>();
+
+		try {
+			statement = connection.createStatement();
+			ResultSet rs = statement.executeQuery(selectSQL);
+			while (rs.next()) {
+
+				Emoticon item = new Emoticon();
+				item.setWord(rs.getString("WORD"));
+				item.setFrequency(rs.getInt("FREQUENCY"));
+				result.add(item);
+			}
+
+		} finally {
+
+			if (statement != null) {
+				try {
+					statement.close();
+				} catch (SQLException e) {
+					System.out.println(
+							"--!!-- ATTENTION: preparedStatement not closed due to an unexpected error. Workflow can continue ");
+					e.printStackTrace();
+				}
+			}
+			commitConnection();
+
+		}
+		
+		return result;
+	}
+	
+	public List<HashTag> getMostFreqHashTag() throws SQLException{
+		Statement statement = null;
+
+		String selectSQL = "SELECT WORD,FREQUENCY FROM HASHTAG ORDER BY FREQUENCY DESC LIMIT 0 ,  "+MainTweetProcessor.HASHTAG_LIMIT;
+		
+		List<HashTag> result = new ArrayList<>();
+
+		try {
+			statement = connection.createStatement();
+			ResultSet rs = statement.executeQuery(selectSQL);
+			while (rs.next()) {
+
+				HashTag item = new HashTag();
+				item.setWord(rs.getString("WORD"));
+				item.setFrequency(rs.getInt("FREQUENCY"));
+				result.add(item);
+			}
+
+		} finally {
+
+			if (statement != null) {
+				try {
+					statement.close();
+				} catch (SQLException e) {
+					System.out.println(
+							"--!!-- ATTENTION: preparedStatement not closed due to an unexpected error. Workflow can continue ");
+					e.printStackTrace();
+				}
+			}
+			commitConnection();
+
+		}
+		
+		return result;
+	}
+	
+	public List<Tweet> getMostFreqTweet() throws SQLException{
+		Statement statement = null;
+
+		String selectSQL = "SELECT WORD,FREQUENCY FROM TWEET ORDER BY FREQUENCY DESC LIMIT 0 ,  "+MainTweetProcessor.TWEET_LIMIT;
+		
+		List<Tweet> result = new ArrayList<>();
+
+		try {
+			statement = connection.createStatement();
+			ResultSet rs = statement.executeQuery(selectSQL);
+			while (rs.next()) {
+
+				Tweet item = new Tweet();
+				item.setWord(rs.getString("WORD"));
+				item.setFrequency(rs.getInt("FREQUENCY"));
+				result.add(item);
+			}
+
+		} finally {
+
+			if (statement != null) {
+				try {
+					statement.close();
+				} catch (SQLException e) {
+					System.out.println(
+							"--!!-- ATTENTION: preparedStatement not closed due to an unexpected error. Workflow can continue ");
+					e.printStackTrace();
+				}
+			}
+			commitConnection();
+
+		}
+		
+		return result;
 	}
 
 	private void commitConnection() throws SQLException {

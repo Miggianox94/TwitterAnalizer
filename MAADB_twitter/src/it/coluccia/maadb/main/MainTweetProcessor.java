@@ -7,6 +7,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -35,6 +36,10 @@ import edu.stanford.nlp.simple.Sentence;
 import edu.stanford.nlp.util.StringUtils;
 import it.coluccia.maadb.dataaccess.MongoDBDAO;
 import it.coluccia.maadb.dataaccess.OracleDAO;
+import it.coluccia.maadb.datamodel.Emoji;
+import it.coluccia.maadb.datamodel.Emoticon;
+import it.coluccia.maadb.datamodel.HashTag;
+import it.coluccia.maadb.datamodel.Tweet;
 import it.coluccia.maadb.utils.Constants;
 import it.coluccia.maadb.utils.MongoCollection;
 import it.coluccia.maadb.utils.SentimentEnum;
@@ -42,6 +47,13 @@ import it.coluccia.maadb.utils.SentimentEnum;
 public class MainTweetProcessor {
 
 	private static final String TWEET_PATH = System.getProperty("user.dir") + "/resources/Tweets/";
+	private static final String WORDS_CLOUDS_PATH = System.getProperty("user.dir") + "/resources/wordsClouds/";
+	private static final String WORDS_CLOUD_TEMPLATE_IMAGE = "duke_resized_template.png";
+	
+	public static final int EMOJI_LIMIT = 50;
+	public static final int EMOTICON_LIMIT = 50;
+	public static final int HASHTAG_LIMIT = 50;
+	public static final int TWEET_LIMIT = 200;
 	
 	private static String jdbcUrl = null;
 	private static String usernameOracle = null;
@@ -118,7 +130,7 @@ public class MainTweetProcessor {
 			}
 			
 			// TODO: filterResult(sentimentChosed,persistMode);
-			// TODO:generateWordsCloud(sentimentChosed,persistMode);
+			generateWordsCloud(sentimentChosed,persistMode);
 		} catch (Exception e) {
 			System.out.println("!!!! ERROR OCCURRED --> ABORT !!!!");
 			e.printStackTrace();
@@ -358,20 +370,92 @@ public class MainTweetProcessor {
 	}
 	
 	
-	private static void generateWordsCloud(SentimentEnum sentiment,int persistMode) throws IOException{
+	private static void generateWordsCloud(SentimentEnum sentiment,int persistMode) throws IOException, SQLException{
+		System.out.println("###### GENERATING WORLD CLOUDS ######");
+		
 		final FrequencyAnalyzer frequencyAnalyzer = new FrequencyAnalyzer();
 		frequencyAnalyzer.setWordFrequenciesToReturn(300);
 		frequencyAnalyzer.setMinWordLength(2);
+		
+		List<WordFrequency> wordFrequenciesOracle = null;
+		List<WordFrequency> wordFrequenciesMongo = null;
 
-		final List<WordFrequency> wordFrequencies = generateListWordFrequencies(persistMode);
+		if(persistMode == 1){
+			wordFrequenciesOracle = generateListWordFrequenciesOracle(sentiment);
+		}
+		else if(persistMode == 2){
+			//TODO: wordFrequenciesMongo = generateListWordFrequenciesMongo(sentiment);
+		}
+		else{
+			//persistMode == 3
+			wordFrequenciesOracle = generateListWordFrequenciesOracle(sentiment);
+			//TODO: wordFrequenciesMongo = generateListWordFrequenciesMongo(sentiment);
+		}
 		final Dimension dimension = new Dimension(500, 312);
 		final WordCloud wordCloud = new WordCloud(dimension, CollisionMode.PIXEL_PERFECT);
 		wordCloud.setPadding(2);
-		wordCloud.setBackground(new PixelBoundryBackground(System.getProperty("user.dir") + "/resources/wordclouds/"+(new Date())+"/"+sentiment.name()));
+		wordCloud.setBackground(new PixelBoundryBackground(WORDS_CLOUDS_PATH + "/templateImages" + WORDS_CLOUD_TEMPLATE_IMAGE));
 		wordCloud.setColorPalette(new ColorPalette(new Color(0x4055F1), new Color(0x408DF1), new Color(0x40AAF1), new Color(0x40C5F1), new Color(0x40D3F1), new Color(0xFFFFFF)));
 		wordCloud.setFontScalar(new LinearFontScalar(10, 40));
-		wordCloud.build(wordFrequencies);
-		wordCloud.writeToFile("kumo-core/output/whale_wordcloud_small.png");
+		
+		if(persistMode == 1){
+			wordCloud.build(wordFrequenciesOracle);
+			wordCloud.writeToFile(WORDS_CLOUDS_PATH + "/outputWordClouds/Oracle/"+(new Date())+"/"+sentiment.name());
+		}
+		else if(persistMode == 2){
+			wordCloud.build(wordFrequenciesMongo);
+			wordCloud.writeToFile(WORDS_CLOUDS_PATH + "/outputWordClouds/Mongo/"+(new Date())+"/"+sentiment.name());
+		}
+		else{
+			//persistMode == 3
+			wordCloud.build(wordFrequenciesOracle);
+			wordCloud.writeToFile(WORDS_CLOUDS_PATH + "/outputWordClouds/Oracle/"+(new Date())+"/"+sentiment.name());
+			wordCloud.build(wordFrequenciesMongo);
+			wordCloud.writeToFile(WORDS_CLOUDS_PATH + "/outputWordClouds/Mongo/"+(new Date())+"/"+sentiment.name());
+		}
+		
+		System.out.println("###### WORLD CLOUDS GENERATED ######");
+	}
+	
+	private static List<WordFrequency> generateListWordFrequenciesOracle(SentimentEnum sentiment) throws SQLException{
+		OracleDAO oracleDao = new OracleDAO(jdbcUrl,usernameOracle,passwordOracle);
+		List<Emoji> mostFrequentEmoji = oracleDao.getMostFreqEmoji();
+		List<Emoticon> mostFrequentEmoticon = oracleDao.getMostFreqEmoticon();
+		List<HashTag> mostFrequentHashTag = oracleDao.getMostFreqHashTag();
+		List<Tweet>  mostFrequentTweet = oracleDao.getMostFreqTweet();
+		
+		List<WordFrequency> result = new ArrayList<>();
+		int counter = 0;
+		for(Emoji emoji : mostFrequentEmoji){
+			if(counter > EMOJI_LIMIT){
+				break;
+			}
+			WordFrequency item = new WordFrequency(emoji.getWord(),emoji.getFrequency());
+			result.add(item);
+		}
+		for(Emoticon emoticon : mostFrequentEmoticon){
+			if(counter > EMOTICON_LIMIT){
+				break;
+			}
+			WordFrequency item = new WordFrequency(emoticon.getWord(),emoticon.getFrequency());
+			result.add(item);
+		}
+		for(HashTag hashTag : mostFrequentHashTag){
+			if(counter > HASHTAG_LIMIT){
+				break;
+			}
+			WordFrequency item = new WordFrequency(hashTag.getWord(),hashTag.getFrequency());
+			result.add(item);
+		}
+		for(Tweet tweet : mostFrequentTweet){
+			if(counter > TWEET_LIMIT){
+				break;
+			}
+			WordFrequency item = new WordFrequency(tweet.getWord(),tweet.getFrequency());
+			result.add(item);
+		}
+		
+		return result;
 	}
 
 }
