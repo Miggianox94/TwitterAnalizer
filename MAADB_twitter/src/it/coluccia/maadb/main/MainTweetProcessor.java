@@ -28,7 +28,6 @@ import com.kennycason.kumo.WordCloud;
 import com.kennycason.kumo.WordFrequency;
 import com.kennycason.kumo.bg.PixelBoundryBackground;
 import com.kennycason.kumo.font.scale.LinearFontScalar;
-import com.kennycason.kumo.nlp.FrequencyAnalyzer;
 import com.kennycason.kumo.palette.ColorPalette;
 
 import edu.stanford.nlp.simple.Document;
@@ -67,15 +66,17 @@ public class MainTweetProcessor {
 	private static int onlyWordClouds = 0;
 	
 	private static MongoDBDAO mongoDbDao = null;
+	private static OracleDAO oracleDao = null;
 
 	/**
 	 * args[0] = jdbcurl. jdbc:oracle:thin:@localhost:1521:SID args[1]
 	 * =oracleusername args[2] = oraclepassword args[3] = sentimentCode; args[4] = persistMode; args[5] = mongohost;
-	 * args[6] = mongoUser; args[7] = mongoPassword; args[8] = mongoDbName; args[9] = mongoPort;
+	 * args[6] = mongoUser; args[7] = mongoPassword; args[8] = mongoDbName; args[9] = mongoPort; args[10] = onlyWordClouds
 	 * 
 	 * @param args
+	 * @throws SQLException 
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws SQLException {
 
 		if (args.length != 11) {
 			System.out.println("!!!! YOU MUST PASS 11 PARAMETERS --> ABORT !!!!");
@@ -114,6 +115,9 @@ public class MainTweetProcessor {
 			mongoDbDao = new MongoDBDAO(mongoHost, mongoPort, mongoUser, mongoPassword, mongoDbName);
 			mongoDbDao.truncateCollections();
 		}
+		if(persistMode == 1 || persistMode == 3){
+			oracleDao = new OracleDAO(jdbcUrl,usernameOracle,passwordOracle);
+		}
 
 		SentimentEnum sentimentChosed = SentimentEnum.getSentimentFromId(sentimentCode);
 
@@ -133,6 +137,7 @@ public class MainTweetProcessor {
 				System.out.println("---------- STARTING PIPELINE FOR TWEET : " + sentence);
 				executePipeline(sentence, sentimentChosed,persistMode);
 			}
+			oracleDao.commitConnection();
 			if(persistMode == 2 || persistMode == 3){
 				mongoDbDao.executeMapReduce(MongoCollection.TWEETS,MongoCollection.TWEETS_REDUCED);
 				mongoDbDao.executeMapReduce(MongoCollection.HASHTAGS,MongoCollection.HASHTAGS_REDUCED);
@@ -357,7 +362,7 @@ public class MainTweetProcessor {
 		
 		if(lemmas != null && !lemmas.isEmpty()){
 			if(persistMode == 1){
-				OracleDAO oracleDao = new OracleDAO(jdbcUrl,usernameOracle,passwordOracle);
+				//OracleDAO oracleDao = new OracleDAO(jdbcUrl,usernameOracle,passwordOracle);
 			    oracleDao.persist(lemmas,hashTags,emoji,emoticons,sentiment);
 			}
 			else if(persistMode == 2){
@@ -365,7 +370,7 @@ public class MainTweetProcessor {
 				mongoDbDao.persist(lemmas,hashTags,emoji,emoticons,sentiment);
 			}
 			else if(persistMode == 3){
-				OracleDAO oracleDao = new OracleDAO(jdbcUrl,usernameOracle,passwordOracle);
+				//OracleDAO oracleDao = new OracleDAO(jdbcUrl,usernameOracle,passwordOracle);
 				//MongoDBDAO mongoDbDao = new MongoDBDAO(mongoHost, mongoPort, mongoUser, mongoPassword, mongoDbName);
 				
 				oracleDao.persist(lemmas,hashTags,emoji,emoticons,sentiment);

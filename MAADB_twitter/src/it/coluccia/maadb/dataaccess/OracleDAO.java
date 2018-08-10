@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 import it.coluccia.maadb.datamodel.Emoji;
 import it.coluccia.maadb.datamodel.Emoticon;
@@ -68,7 +69,7 @@ public class OracleDAO {
 			throw new Exception(e.getMessage());
 		}
 		finally{
-			commitConnection();
+			//commitConnection();
 		}
 	}
 	
@@ -212,7 +213,7 @@ public class OracleDAO {
 		return result;
 	}
 
-	private void commitConnection() throws SQLException {
+	public void commitConnection() throws SQLException {
 		if (connection != null && !connection.isClosed()) {
 			connection.commit();
 			connection.close();
@@ -232,7 +233,13 @@ public class OracleDAO {
 	private Connection createOracleDBConnection(String jdbcUrl, String username, String password) throws SQLException {
 		Connection conn = null;
 
-		conn = DriverManager.getConnection(jdbcUrl, username, password);
+		//conn = DriverManager.getConnection(jdbcUrl, username, password);
+		Properties connectionProps = new Properties();
+	    connectionProps.put("user", username);
+	    connectionProps.put("password", password);
+	    connectionProps.put("useUnicode","true");
+	    connectionProps.put("characterEncoding","UTF-8");
+		conn = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:ORCL",connectionProps);
 		conn.setAutoCommit(false);
 
 		return conn;
