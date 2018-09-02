@@ -13,20 +13,32 @@ services:
              - ./data/mongo/shard1/replica1:/data/db
         restart: always
         networks:
-            - mongo_cluster
+            - mongo_cluster2
             
             
-    shard1_replica2:
+#    shard1_replica2:
+#        image: khezen/mongo:slim
+#        environment:
+#            RS_NAME: shard1
+#            SHARD_SVR: 'y'
+#            AUTH: 'y'
+#        volumes:
+#             - ./data/mongo/shard1/replica2:/data/db
+#        restart: always
+#        networks:
+#            - mongo_cluster2
+#            
+    shard1_arbiter:
         image: khezen/mongo:slim
         environment:
             RS_NAME: shard1
             SHARD_SVR: 'y'
             AUTH: 'y'
         volumes:
-             - ./data/mongo/shard1/replica2:/data/db
+             - ./data/mongo/shard1/arbiter:/data/db
         restart: always
         networks:
-            - mongo_cluster
+            - mongo_cluster2
             
             
     shard1_replica3:
@@ -35,13 +47,15 @@ services:
             RS_NAME: shard1
             SHARD_SVR: 'y'
             MASTER: shard1_replica3
-            SLAVES: shard1_replica1 shard1_replica2
+#            SLAVES: shard1_replica1 shard1_replica2
+            SLAVES: shard1_replica1
             AUTH: 'y'
+            ARBITRERS: shard1_arbiter
         volumes:
              - ./data/mongo/shard1/replica3:/data/db
         restart: always
         networks:
-            - mongo_cluster
+            - mongo_cluster2
         
         
       
@@ -57,20 +71,32 @@ services:
              - ./data/mongo/shard2/replica1:/data/db
         restart: always
         networks:
-            - mongo_cluster
+            - mongo_cluster2
             
             
-    shard2_replica2:
+#    shard2_replica2:
+#        image: khezen/mongo:slim
+#        environment:
+#            RS_NAME: shard2
+#            SHARD_SVR: 'y'
+#            AUTH: 'y'
+#        volumes:
+#             - ./data/mongo/shard2/replica2:/data/db
+#        restart: always
+#        networks:
+#            - mongo_cluster2
+#            
+    shard2_arbiter:
         image: khezen/mongo:slim
         environment:
             RS_NAME: shard2
             SHARD_SVR: 'y'
             AUTH: 'y'
         volumes:
-             - ./data/mongo/shard2/replica2:/data/db
+             - ./data/mongo/shard2/arbiter:/data/db
         restart: always
         networks:
-            - mongo_cluster
+            - mongo_cluster2
             
     shard2_replica3:
         image: khezen/mongo:slim
@@ -78,13 +104,15 @@ services:
             RS_NAME: shard2
             SHARD_SVR: 'y'
             MASTER: shard2_replica3
-            SLAVES: shard2_replica1 shard2_replica2
+#            SLAVES: shard2_replica1 shard2_replica2
+            SLAVES: shard2_replica1
             AUTH: 'y'
+            ARBITRERS: shard2_arbiter
         volumes:
              - ./data/mongo/shard2/replica3:/data/db
         restart: always
         networks:
-            - mongo_cluster
+            - mongo_cluster2
 
 
 # CONFIG SVRS
@@ -100,7 +128,7 @@ services:
              - ./data/mongo/configsvr/replica1:/data/db
         restart: always
         networks:
-            - mongo_cluster
+            - mongo_cluster2
             
     configsvr2:
         image: khezen/mongo:slim
@@ -112,7 +140,19 @@ services:
              - ./data/mongo/configsvr/replica2:/data/db
         restart: always
         networks:
-            - mongo_cluster
+            - mongo_cluster2
+            
+    configsvr_arbiter:
+        image: khezen/mongo:slim
+        environment:
+            RS_NAME: configsvr
+            SHARD_SVR: 'y'
+            AUTH: 'y'
+        volumes:
+             - ./data/mongo/configsvr/arbiter:/data/db
+        restart: always
+        networks:
+            - mongo_cluster2
             
     configsvr3:
         image: khezen/mongo:slim
@@ -122,11 +162,12 @@ services:
             MASTER: configsvr3
             SLAVES: configsvr1 configsvr2
             AUTH: 'y'
+            ARBITRERS: configsvr_arbiter
         volumes:
              - ./data/mongo/configsvr/replica3:/data/db
         restart: always
         networks:
-            - mongo_cluster
+            - mongo_cluster2
             
     
     
@@ -143,7 +184,7 @@ services:
           TCP_PORTS: 27017
         restart: always
         networks:
-            - mongo_cluster
+            - mongo_cluster2
         ports:
             - "27017:27017"
            
@@ -166,7 +207,7 @@ services:
      
 
 networks:
-  mongo_cluster:
+  mongo_cluster2:
     driver: bridge
 
 

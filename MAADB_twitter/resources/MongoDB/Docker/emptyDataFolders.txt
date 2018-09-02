@@ -1,0 +1,30 @@
+rm -r /home/MAADB/_shardedVersionVolume/data/mongo/configsvr/arbiter/*
+rm -r /home/MAADB/_shardedVersionVolume/data/mongo/configsvr/replica1/*
+rm -r /home/MAADB/_shardedVersionVolume/data/mongo/configsvr/replica2/*
+rm -r /home/MAADB/_shardedVersionVolume/data/mongo/configsvr/replica3/*
+
+rm -r /home/MAADB/_shardedVersionVolume/data/mongo/shard1/arbiter/*
+rm -r /home/MAADB/_shardedVersionVolume/data/mongo/shard1/replica1/*
+rm -r /home/MAADB/_shardedVersionVolume/data/mongo/shard1/replica2/*
+rm -r /home/MAADB/_shardedVersionVolume/data/mongo/shard1/replica3/*
+
+rm -r /home/MAADB/_shardedVersionVolume/data/mongo/shard2/arbiter/*
+rm -r /home/MAADB/_shardedVersionVolume/data/mongo/shard2/replica1/*
+rm -r /home/MAADB/_shardedVersionVolume/data/mongo/shard2/replica2/*
+rm -r /home/MAADB/_shardedVersionVolume/data/mongo/shard2/replica3/*
+
+
+rm -r /home/MAADB/_shardedVersionVolume/data/mongo/configsvr/arbiter/.metadata
+rm -r /home/MAADB/_shardedVersionVolume/data/mongo/configsvr/replica1/.metadata
+rm -r /home/MAADB/_shardedVersionVolume/data/mongo/configsvr/replica2/.metadata
+rm -r /home/MAADB/_shardedVersionVolume/data/mongo/configsvr/replica3/.metadata
+
+rm -r /home/MAADB/_shardedVersionVolume/data/mongo/shard1/arbiter/.metadata
+rm -r /home/MAADB/_shardedVersionVolume/data/mongo/shard1/replica1/.metadata
+rm -r /home/MAADB/_shardedVersionVolume/data/mongo/shard1/replica2/.metadata
+rm -r /home/MAADB/_shardedVersionVolume/data/mongo/shard1/replica3/.metadata
+
+rm -r /home/MAADB/_shardedVersionVolume/data/mongo/shard2/arbiter/.metadata
+rm -r /home/MAADB/_shardedVersionVolume/data/mongo/shard2/replica1/.metadata
+rm -r /home/MAADB/_shardedVersionVolume/data/mongo/shard2/replica2/.metadata
+rm -r /home/MAADB/_shardedVersionVolume/data/mongo/shard2/replica3/.metadata

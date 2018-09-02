@@ -111,9 +111,11 @@ public class MainTweetProcessor {
 		}
 		
 		if(persistMode == 2 || persistMode == 3){
-			System.out.println("############## TRUNCATING MONGO COLLECTIONS ##############");
-			mongoDbDao = new MongoDBDAO(mongoHost, mongoPort, mongoUser, mongoPassword, mongoDbName);
-			mongoDbDao.truncateCollections();
+			if(onlyWordClouds != 1){
+				System.out.println("############## TRUNCATING MONGO COLLECTIONS ##############");
+				mongoDbDao = new MongoDBDAO(mongoHost, mongoPort, mongoUser, mongoPassword, mongoDbName);
+				mongoDbDao.truncateCollections();	
+			}
 		}
 		if(persistMode == 1 || persistMode == 3){
 			oracleDao = new OracleDAO(jdbcUrl,usernameOracle,passwordOracle);
@@ -137,8 +139,13 @@ public class MainTweetProcessor {
 				System.out.println("---------- STARTING PIPELINE FOR TWEET : " + sentence);
 				executePipeline(sentence, sentimentChosed,persistMode);
 			}
-			oracleDao.commitConnection();
+
+			if(persistMode == 1 || persistMode == 3){
+				oracleDao.commitConnection();	
+			}
+			
 			if(persistMode == 2 || persistMode == 3){
+				//mongoDbDao.closeConnection();
 				mongoDbDao.executeMapReduce(MongoCollection.TWEETS,MongoCollection.TWEETS_REDUCED);
 				mongoDbDao.executeMapReduce(MongoCollection.HASHTAGS,MongoCollection.HASHTAGS_REDUCED);
 				mongoDbDao.executeMapReduce(MongoCollection.EMOTICONS,MongoCollection.EMOTICONS_REDUCED);
@@ -480,6 +487,9 @@ public class MainTweetProcessor {
 	}
 	
 	private static List<WordFrequency> generateListWordFrequenciesMongo(SentimentEnum sentiment) throws SQLException{
+		if(mongoDbDao == null){
+			mongoDbDao = new MongoDBDAO(mongoHost, mongoPort, mongoUser, mongoPassword, mongoDbName);
+		}
 		List<Emoji> mostFrequentEmoji = mongoDbDao.getMostFreqEmoji();
 		List<Emoticon> mostFrequentEmoticon = mongoDbDao.getMostFreqEmoticon();
 		List<HashTag> mostFrequentHashTag = mongoDbDao.getMostFreqHashTag();

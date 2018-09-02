@@ -4,15 +4,17 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.bson.BsonDocument;
+import org.bson.BsonString;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 
-import com.mongodb.DB;
-import com.mongodb.MapReduceCommand;
-import com.mongodb.Mongo;
 import com.mongodb.MongoClientSettings;
 import com.mongodb.MongoCredential;
+import com.mongodb.ReadPreference;
 import com.mongodb.ServerAddress;
+import com.mongodb.WriteConcern;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
@@ -57,6 +59,8 @@ public class MongoDBDAO {
 		                .applyToClusterSettings(builder -> 
 		                        builder.hosts(Arrays.asList(new ServerAddress(host, port))))
 		                .credential(credential)
+		                .writeConcern(WriteConcern.UNACKNOWLEDGED)
+		                .readPreference(ReadPreference.primaryPreferred())
 		                .build());
 
 		// Accessing the database
@@ -76,22 +80,39 @@ public class MongoDBDAO {
 	}
 	
 	public void truncateCollections(){
-		database.getCollection(MongoCollection.TWEETS.getMongoName()).deleteMany(new Document());;
-		database.getCollection(MongoCollection.EMOJI.getMongoName()).deleteMany(new Document());;
-		database.getCollection(MongoCollection.EMOTICONS.getMongoName()).deleteMany(new Document());;
-		database.getCollection(MongoCollection.HASHTAGS.getMongoName()).deleteMany(new Document());;
+		database.getCollection(MongoCollection.TWEETS.getMongoName()).deleteMany(new Document());
+		database.getCollection(MongoCollection.EMOJI.getMongoName()).deleteMany(new Document());
+		database.getCollection(MongoCollection.EMOTICONS.getMongoName()).deleteMany(new Document());
+		database.getCollection(MongoCollection.HASHTAGS.getMongoName()).deleteMany(new Document());
+		
+		//non ho bisogno di truncate perchè uso option REPLACE
+		/*database.getCollection(MongoCollection.TWEETS_REDUCED.getMongoName()).deleteMany(new Document());
+		database.getCollection(MongoCollection.EMOJI_REDUCED.getMongoName()).deleteMany(new Document());
+		database.getCollection(MongoCollection.EMOTICONS_REDUCED.getMongoName()).deleteMany(new Document());
+		database.getCollection(MongoCollection.HASHTAGS_REDUCED.getMongoName()).deleteMany(new Document());*/
 	}
 	
 	@SuppressWarnings("deprecation")
 	public void executeMapReduce(MongoCollection inputCollection, MongoCollection outputCollection){
 		System.out.println("MONGODB: Executing mapreduce for collection "+ inputCollection.getMongoName());
-		DB db = new Mongo().getDB(database.getName());
-		new MapReduceCommand(db.getCollection(inputCollection.getMongoName()), Constants.mapFunction, Constants.reduceFunction,outputCollection.getMongoName(), MapReduceCommand.OutputType.REPLACE, null);
+		/*DB db = new Mongo(host, port).getDB(database.getName());
+		MapReduceCommand command = new MapReduceCommand(db.getCollection(inputCollection.getMongoName()), Constants.mapFunction, Constants.reduceFunction,outputCollection.getMongoName(), MapReduceCommand.OutputType.REPLACE, null);
+		db.getCollection(inputCollection.getMongoName()).mapReduce(command);*/
+		
+		Bson command = new Document()
+				.append("mapreduce", inputCollection.getMongoName())
+				.append("map", Constants.mapFunction)
+				.append("reduce", Constants.reduceFunction)
+				.append("out", new Document()
+						.append("replace", outputCollection.getMongoName()))
+						/*.append("sharded", false)
+						.append("nonAtomic", false)*/;
+		database.runCommand(command);
 	}
 	
 	public List<Emoji> getMostFreqEmoji(){
 		List<Emoji> result = new ArrayList<>();
-		FindIterable<Document> results = database.getCollection(MongoCollection.EMOJI.getMongoName()).find().limit( MainTweetProcessor.EMOJI_LIMIT ).sort(Sorts.descending("frequency"));
+		FindIterable<Document> results = database.getCollection(MongoCollection.EMOJI_REDUCED.getMongoName()).find().limit( MainTweetProcessor.EMOJI_LIMIT ).sort(Sorts.descending("frequency"));
         for (Document doc : results) {
         	Emoji item = new Emoji();
         	item.setWord(doc.getString("word"));
@@ -103,7 +124,7 @@ public class MongoDBDAO {
 	
 	public List<Emoticon> getMostFreqEmoticon(){
 		List<Emoticon> result = new ArrayList<>();
-		FindIterable<Document> results = database.getCollection(MongoCollection.EMOTICONS.getMongoName()).find().limit( MainTweetProcessor.EMOTICON_LIMIT ).sort(Sorts.descending("frequency"));
+		FindIterable<Document> results = database.getCollection(MongoCollection.EMOTICONS_REDUCED.getMongoName()).find().limit( MainTweetProcessor.EMOTICON_LIMIT ).sort(Sorts.descending("frequency"));
         for (Document doc : results) {
         	Emoticon item = new Emoticon();
         	item.setWord(doc.getString("word"));
@@ -115,7 +136,7 @@ public class MongoDBDAO {
 	
 	public List<HashTag> getMostFreqHashTag(){
 		List<HashTag> result = new ArrayList<>();
-		FindIterable<Document> results = database.getCollection(MongoCollection.HASHTAGS.getMongoName()).find().limit( MainTweetProcessor.HASHTAG_LIMIT ).sort(Sorts.descending("frequency"));
+		FindIterable<Document> results = database.getCollection(MongoCollection.HASHTAGS_REDUCED.getMongoName()).find().limit( MainTweetProcessor.HASHTAG_LIMIT ).sort(Sorts.descending("frequency"));
         for (Document doc : results) {
         	HashTag item = new HashTag();
         	item.setWord(doc.getString("word"));
@@ -127,7 +148,7 @@ public class MongoDBDAO {
 	
 	public List<Tweet> getMostFreqTweet(){
 		List<Tweet> result = new ArrayList<>();
-		FindIterable<Document> results = database.getCollection(MongoCollection.TWEETS.getMongoName()).find().limit( MainTweetProcessor.TWEET_LIMIT ).sort(Sorts.descending("frequency"));
+		FindIterable<Document> results = database.getCollection(MongoCollection.TWEETS_REDUCED.getMongoName()).find().limit( MainTweetProcessor.TWEET_LIMIT ).sort(Sorts.descending("frequency"));
         for (Document doc : results) {
         	Tweet item = new Tweet();
         	item.setWord(doc.getString("word"));
@@ -164,6 +185,7 @@ public class MongoDBDAO {
 		try {
 			database.getCollection(MongoCollection.TWEETS.getMongoName()).insertMany(lemmasDocuments);
 		} catch (Exception e) {
+			e.printStackTrace();
 			tryToRestoreConnection();
 			database.getCollection(MongoCollection.TWEETS.getMongoName()).insertMany(lemmasDocuments);
 		}
@@ -177,6 +199,7 @@ public class MongoDBDAO {
 		try {
 			database.getCollection(MongoCollection.HASHTAGS.getMongoName()).insertMany(hashtagsDocuments);
 		} catch (Exception e) {
+			e.printStackTrace();
 			tryToRestoreConnection();
 			database.getCollection(MongoCollection.HASHTAGS.getMongoName()).insertMany(hashtagsDocuments);
 		}
@@ -190,6 +213,7 @@ public class MongoDBDAO {
 		try {
 			database.getCollection(MongoCollection.EMOJI.getMongoName()).insertMany(emojiDocuments);
 		} catch (Exception e) {
+			e.printStackTrace();
 			tryToRestoreConnection();
 			database.getCollection(MongoCollection.EMOJI.getMongoName()).insertMany(emojiDocuments);
 		}
@@ -203,6 +227,7 @@ public class MongoDBDAO {
 		try {
 			database.getCollection(MongoCollection.EMOTICONS.getMongoName()).insertMany(emoticonsDocuments);
 		} catch (Exception e) {
+			e.printStackTrace();
 			tryToRestoreConnection();
 			database.getCollection(MongoCollection.EMOTICONS.getMongoName()).insertMany(emoticonsDocuments);
 		}
@@ -340,6 +365,12 @@ public class MongoDBDAO {
 		}
 		
 		mongo.close();
+	}
+	
+	public void closeConnection(){
+		if(mongo != null){
+			mongo.close();
+		}
 	}
 	
 
