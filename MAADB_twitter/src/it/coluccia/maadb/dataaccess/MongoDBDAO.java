@@ -92,7 +92,6 @@ public class MongoDBDAO {
 		database.getCollection(MongoCollection.HASHTAGS_REDUCED.getMongoName()).deleteMany(new Document());*/
 	}
 	
-	@SuppressWarnings("deprecation")
 	public void executeMapReduce(MongoCollection inputCollection, MongoCollection outputCollection){
 		System.out.println("MONGODB: Executing mapreduce for collection "+ inputCollection.getMongoName());
 		/*DB db = new Mongo(host, port).getDB(database.getName());
@@ -112,11 +111,11 @@ public class MongoDBDAO {
 	
 	public List<Emoji> getMostFreqEmoji(){
 		List<Emoji> result = new ArrayList<>();
-		FindIterable<Document> results = database.getCollection(MongoCollection.EMOJI_REDUCED.getMongoName()).find().limit( MainTweetProcessor.EMOJI_LIMIT ).sort(Sorts.descending("frequency"));
+		FindIterable<Document> results = database.getCollection(MongoCollection.EMOJI_REDUCED.getMongoName()).find().limit( MainTweetProcessor.EMOJI_LIMIT ).sort(Sorts.descending("value"));
         for (Document doc : results) {
         	Emoji item = new Emoji();
-        	item.setWord(doc.getString("word"));
-        	item.setFrequency(doc.getInteger("frequency"));
+        	item.setWord(doc.get("_id",Document.class).getString("word"));
+        	item.setFrequency(doc.getDouble("value").intValue());
         	result.add(item);
         }
         return result;
@@ -124,11 +123,11 @@ public class MongoDBDAO {
 	
 	public List<Emoticon> getMostFreqEmoticon(){
 		List<Emoticon> result = new ArrayList<>();
-		FindIterable<Document> results = database.getCollection(MongoCollection.EMOTICONS_REDUCED.getMongoName()).find().limit( MainTweetProcessor.EMOTICON_LIMIT ).sort(Sorts.descending("frequency"));
+		FindIterable<Document> results = database.getCollection(MongoCollection.EMOTICONS_REDUCED.getMongoName()).find().limit( MainTweetProcessor.EMOTICON_LIMIT ).sort(Sorts.descending("value"));
         for (Document doc : results) {
         	Emoticon item = new Emoticon();
-        	item.setWord(doc.getString("word"));
-        	item.setFrequency(doc.getInteger("frequency"));
+        	item.setWord(doc.get("_id",Document.class).getString("word"));
+        	item.setFrequency(doc.getDouble("value").intValue());
         	result.add(item);
         }
         return result;
@@ -136,11 +135,11 @@ public class MongoDBDAO {
 	
 	public List<HashTag> getMostFreqHashTag(){
 		List<HashTag> result = new ArrayList<>();
-		FindIterable<Document> results = database.getCollection(MongoCollection.HASHTAGS_REDUCED.getMongoName()).find().limit( MainTweetProcessor.HASHTAG_LIMIT ).sort(Sorts.descending("frequency"));
+		FindIterable<Document> results = database.getCollection(MongoCollection.HASHTAGS_REDUCED.getMongoName()).find().limit( MainTweetProcessor.HASHTAG_LIMIT ).sort(Sorts.descending("value"));
         for (Document doc : results) {
         	HashTag item = new HashTag();
-        	item.setWord(doc.getString("word"));
-        	item.setFrequency(doc.getInteger("frequency"));
+        	item.setWord(doc.get("_id",Document.class).getString("word"));
+        	item.setFrequency(doc.getDouble("value").intValue());
         	result.add(item);
         }
         return result;
@@ -148,11 +147,11 @@ public class MongoDBDAO {
 	
 	public List<Tweet> getMostFreqTweet(){
 		List<Tweet> result = new ArrayList<>();
-		FindIterable<Document> results = database.getCollection(MongoCollection.TWEETS_REDUCED.getMongoName()).find().limit( MainTweetProcessor.TWEET_LIMIT ).sort(Sorts.descending("frequency"));
+		FindIterable<Document> results = database.getCollection(MongoCollection.TWEETS_REDUCED.getMongoName()).find().limit( MainTweetProcessor.TWEET_LIMIT ).sort(Sorts.descending("value"));
         for (Document doc : results) {
         	Tweet item = new Tweet();
-        	item.setWord(doc.getString("word"));
-        	item.setFrequency(doc.getInteger("frequency"));
+        	item.setWord(doc.get("_id",Document.class).getString("word"));
+        	item.setFrequency(doc.getDouble("value").intValue());
         	result.add(item);
         }
         return result;

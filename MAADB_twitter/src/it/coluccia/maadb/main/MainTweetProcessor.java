@@ -409,12 +409,12 @@ public class MainTweetProcessor {
 			wordFrequenciesOracle = generateListWordFrequenciesOracle(sentiment);
 			wordFrequenciesMongo = generateListWordFrequenciesMongo(sentiment);
 		}
-		final Dimension dimension = new Dimension(500, 312);
+		final Dimension dimension = new Dimension(700, 450);
 		final WordCloud wordCloud = new WordCloud(dimension, CollisionMode.PIXEL_PERFECT);
 		wordCloud.setPadding(2);
 		wordCloud.setBackground(new PixelBoundryBackground(WORDS_CLOUDS_PATH + "/templateImages/" + WORDS_CLOUD_TEMPLATE_IMAGE));
-		wordCloud.setColorPalette(new ColorPalette(new Color(0x4055F1), new Color(0x408DF1), new Color(0x40AAF1), new Color(0x40C5F1), new Color(0x40D3F1), new Color(0xFFFFFF)));
-		wordCloud.setFontScalar(new LinearFontScalar(10, 40));
+		wordCloud.setColorPalette(new ColorPalette(new Color(0x587291), new Color(0x2F97C1), new Color(0x1CCAD8), new Color(0x0CF574), new Color(0x40D3F1), new Color(0xFFFFFF)));
+		wordCloud.setFontScalar(new LinearFontScalar(5, 80));
 		
 		long toDateString = new Date().getTime();
 		String fileName = "wordClouds_"+toDateString+""+sentiment.name()+".png";
@@ -440,21 +440,21 @@ public class MainTweetProcessor {
 	
 	private static List<WordFrequency> generateListWordFrequenciesOracle(SentimentEnum sentiment) throws SQLException{
 		OracleDAO oracleDao = new OracleDAO(jdbcUrl,usernameOracle,passwordOracle);
-		List<Emoji> mostFrequentEmoji = oracleDao.getMostFreqEmoji();
+		/*List<Emoji> mostFrequentEmoji = oracleDao.getMostFreqEmoji();*/
 		List<Emoticon> mostFrequentEmoticon = oracleDao.getMostFreqEmoticon();
 		List<HashTag> mostFrequentHashTag = oracleDao.getMostFreqHashTag();
 		List<Tweet>  mostFrequentTweet = oracleDao.getMostFreqTweet();
 		
 		List<WordFrequency> result = new ArrayList<>();
 		int counter = 0;
-		for(Emoji emoji : mostFrequentEmoji){
+		/*for(Emoji emoji : mostFrequentEmoji){
 			if(counter > EMOJI_LIMIT){
 				break;
 			}
 			WordFrequency item = new WordFrequency(emoji.getWord(),emoji.getFrequency());
 			result.add(item);
 			counter++;
-		}
+		}*/
 		counter = 0;
 		for(Emoticon emoticon : mostFrequentEmoticon){
 			if(counter > EMOTICON_LIMIT){
@@ -490,21 +490,21 @@ public class MainTweetProcessor {
 		if(mongoDbDao == null){
 			mongoDbDao = new MongoDBDAO(mongoHost, mongoPort, mongoUser, mongoPassword, mongoDbName);
 		}
-		List<Emoji> mostFrequentEmoji = mongoDbDao.getMostFreqEmoji();
+		/*List<Emoji> mostFrequentEmoji = mongoDbDao.getMostFreqEmoji();*/
 		List<Emoticon> mostFrequentEmoticon = mongoDbDao.getMostFreqEmoticon();
 		List<HashTag> mostFrequentHashTag = mongoDbDao.getMostFreqHashTag();
 		List<Tweet>  mostFrequentTweet = mongoDbDao.getMostFreqTweet();
 		
 		List<WordFrequency> result = new ArrayList<>();
 		int counter = 0;
-		for(Emoji emoji : mostFrequentEmoji){
+		/*for(Emoji emoji : mostFrequentEmoji){
 			if(counter > EMOJI_LIMIT){
 				break;
 			}
 			WordFrequency item = new WordFrequency(emoji.getWord(),emoji.getFrequency());
 			result.add(item);
 			counter++;
-		}
+		}*/
 		counter = 0;
 		for(Emoticon emoticon : mostFrequentEmoticon){
 			if(counter > EMOTICON_LIMIT){
