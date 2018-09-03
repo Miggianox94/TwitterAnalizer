@@ -110,12 +110,15 @@ public class MainTweetProcessor {
 			throw new IllegalArgumentException("!!!! The persistMode passed is not valid --> ABORT !!!!");
 		}
 		
-		if(persistMode == 2 || persistMode == 3){
+		/*if(persistMode == 2 || persistMode == 3){
 			if(onlyWordClouds != 1){
 				System.out.println("############## TRUNCATING MONGO COLLECTIONS ##############");
 				mongoDbDao = new MongoDBDAO(mongoHost, mongoPort, mongoUser, mongoPassword, mongoDbName);
 				mongoDbDao.truncateCollections();	
 			}
+		}*/
+		if(persistMode == 2 || persistMode == 3){
+			mongoDbDao = new MongoDBDAO(mongoHost, mongoPort, mongoUser, mongoPassword, mongoDbName);
 		}
 		if(persistMode == 1 || persistMode == 3){
 			oracleDao = new OracleDAO(jdbcUrl,usernameOracle,passwordOracle);
@@ -441,9 +444,9 @@ public class MainTweetProcessor {
 	private static List<WordFrequency> generateListWordFrequenciesOracle(SentimentEnum sentiment) throws SQLException{
 		OracleDAO oracleDao = new OracleDAO(jdbcUrl,usernameOracle,passwordOracle);
 		/*List<Emoji> mostFrequentEmoji = oracleDao.getMostFreqEmoji();*/
-		List<Emoticon> mostFrequentEmoticon = oracleDao.getMostFreqEmoticon();
-		List<HashTag> mostFrequentHashTag = oracleDao.getMostFreqHashTag();
-		List<Tweet>  mostFrequentTweet = oracleDao.getMostFreqTweet();
+		List<Emoticon> mostFrequentEmoticon = oracleDao.getMostFreqEmoticon(sentiment);
+		List<HashTag> mostFrequentHashTag = oracleDao.getMostFreqHashTag(sentiment);
+		List<Tweet>  mostFrequentTweet = oracleDao.getMostFreqTweet(sentiment);
 		
 		List<WordFrequency> result = new ArrayList<>();
 		int counter = 0;
@@ -491,9 +494,9 @@ public class MainTweetProcessor {
 			mongoDbDao = new MongoDBDAO(mongoHost, mongoPort, mongoUser, mongoPassword, mongoDbName);
 		}
 		/*List<Emoji> mostFrequentEmoji = mongoDbDao.getMostFreqEmoji();*/
-		List<Emoticon> mostFrequentEmoticon = mongoDbDao.getMostFreqEmoticon();
-		List<HashTag> mostFrequentHashTag = mongoDbDao.getMostFreqHashTag();
-		List<Tweet>  mostFrequentTweet = mongoDbDao.getMostFreqTweet();
+		List<Emoticon> mostFrequentEmoticon = mongoDbDao.getMostFreqEmoticon(sentiment);
+		List<HashTag> mostFrequentHashTag = mongoDbDao.getMostFreqHashTag(sentiment);
+		List<Tweet>  mostFrequentTweet = mongoDbDao.getMostFreqTweet(sentiment);
 		
 		List<WordFrequency> result = new ArrayList<>();
 		int counter = 0;

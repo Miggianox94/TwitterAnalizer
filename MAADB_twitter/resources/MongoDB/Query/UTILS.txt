@@ -1,0 +1,3 @@
+/*************RIMUOVE I RECORD CON UNO SPECIFICO SENTIMENT***********/
+	db.getCollection('tweets_reduced').remove({_id:{sentiment : {'$eq':'ANTICIPATION'}}})
+	db.getCollection('tweets').remove({sentiment : 'ANTICIPATION'})

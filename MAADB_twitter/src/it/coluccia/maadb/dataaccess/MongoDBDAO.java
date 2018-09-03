@@ -4,12 +4,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.bson.BsonDocument;
-import org.bson.BsonString;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 
+import com.mongodb.BasicDBObject;
 import com.mongodb.MongoClientSettings;
 import com.mongodb.MongoCredential;
 import com.mongodb.ReadPreference;
@@ -103,7 +102,7 @@ public class MongoDBDAO {
 				.append("map", Constants.mapFunction)
 				.append("reduce", Constants.reduceFunction)
 				.append("out", new Document()
-						.append("replace", outputCollection.getMongoName()))
+						.append("merge", outputCollection.getMongoName()))
 						/*.append("sharded", false)
 						.append("nonAtomic", false)*/;
 		database.runCommand(command);
@@ -121,10 +120,32 @@ public class MongoDBDAO {
         return result;
 	}
 	
-	public List<Emoticon> getMostFreqEmoticon(){
+	private boolean existInMinus(Document doc,FindIterable<Document> resultsMinus){
+		for (Document docMinus : resultsMinus) {
+			if(doc.get("_id",Document.class).getString("word").equals(docMinus.get("_id",Document.class).getString("word"))){
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public List<Emoticon> getMostFreqEmoticon(SentimentEnum sentiment){
 		List<Emoticon> result = new ArrayList<>();
-		FindIterable<Document> results = database.getCollection(MongoCollection.EMOTICONS_REDUCED.getMongoName()).find().limit( MainTweetProcessor.EMOTICON_LIMIT ).sort(Sorts.descending("value"));
-        for (Document doc : results) {
+		BasicDBObject query = new BasicDBObject();
+		query.put("_id.sentiment", sentiment.name());
+		FindIterable<Document> results = database.getCollection(MongoCollection.EMOTICONS_REDUCED.getMongoName()).find(query).limit( MainTweetProcessor.EMOTICON_LIMIT ).sort(Sorts.descending("value"));
+        
+		BasicDBObject queryMinus = new BasicDBObject();
+		queryMinus.put("value", new BasicDBObject("$gt", Constants.FREQUENCY_TRESHOLD));
+		queryMinus.put("_id.sentiment", new BasicDBObject("$ne", sentiment.name()));
+		FindIterable<Document> resultsMinus = database.getCollection(MongoCollection.EMOTICONS_REDUCED.getMongoName()).find(queryMinus).limit( MainTweetProcessor.EMOTICON_LIMIT ).sort(Sorts.descending("value"));
+		
+		for (Document doc : results) {
+			
+			if(existInMinus(doc,resultsMinus)){
+				continue;
+			}
+			
         	Emoticon item = new Emoticon();
         	item.setWord(doc.get("_id",Document.class).getString("word"));
         	item.setFrequency(doc.getDouble("value").intValue());
@@ -133,10 +154,23 @@ public class MongoDBDAO {
         return result;
 	}
 	
-	public List<HashTag> getMostFreqHashTag(){
+	public List<HashTag> getMostFreqHashTag(SentimentEnum sentiment){
 		List<HashTag> result = new ArrayList<>();
-		FindIterable<Document> results = database.getCollection(MongoCollection.HASHTAGS_REDUCED.getMongoName()).find().limit( MainTweetProcessor.HASHTAG_LIMIT ).sort(Sorts.descending("value"));
-        for (Document doc : results) {
+		BasicDBObject query = new BasicDBObject();
+		query.put("_id.sentiment", sentiment.name());
+		FindIterable<Document> results = database.getCollection(MongoCollection.HASHTAGS_REDUCED.getMongoName()).find(query).limit( MainTweetProcessor.HASHTAG_LIMIT ).sort(Sorts.descending("value"));
+        
+		BasicDBObject queryMinus = new BasicDBObject();
+		queryMinus.put("value", new BasicDBObject("$gt", Constants.FREQUENCY_TRESHOLD));
+		queryMinus.put("_id.sentiment", new BasicDBObject("$ne", sentiment.name()));
+		FindIterable<Document> resultsMinus = database.getCollection(MongoCollection.HASHTAGS_REDUCED.getMongoName()).find(queryMinus).limit( MainTweetProcessor.HASHTAG_LIMIT ).sort(Sorts.descending("value"));
+		
+		for (Document doc : results) {
+			
+			if(existInMinus(doc,resultsMinus)){
+				continue;
+			}
+			
         	HashTag item = new HashTag();
         	item.setWord(doc.get("_id",Document.class).getString("word"));
         	item.setFrequency(doc.getDouble("value").intValue());
@@ -145,10 +179,23 @@ public class MongoDBDAO {
         return result;
 	}
 	
-	public List<Tweet> getMostFreqTweet(){
+	public List<Tweet> getMostFreqTweet(SentimentEnum sentiment){
 		List<Tweet> result = new ArrayList<>();
-		FindIterable<Document> results = database.getCollection(MongoCollection.TWEETS_REDUCED.getMongoName()).find().limit( MainTweetProcessor.TWEET_LIMIT ).sort(Sorts.descending("value"));
-        for (Document doc : results) {
+		BasicDBObject query = new BasicDBObject();
+		query.put("_id.sentiment", sentiment.name());
+		FindIterable<Document> results = database.getCollection(MongoCollection.TWEETS_REDUCED.getMongoName()).find(query).limit( MainTweetProcessor.TWEET_LIMIT ).sort(Sorts.descending("value"));
+        
+		BasicDBObject queryMinus = new BasicDBObject();
+		queryMinus.put("value", new BasicDBObject("$gt", Constants.FREQUENCY_TRESHOLD));
+		queryMinus.put("_id.sentiment", new BasicDBObject("$ne", sentiment.name()));
+		FindIterable<Document> resultsMinus = database.getCollection(MongoCollection.TWEETS_REDUCED.getMongoName()).find(queryMinus).limit( MainTweetProcessor.TWEET_LIMIT ).sort(Sorts.descending("value"));
+		
+		for (Document doc : results) {
+			
+			if(existInMinus(doc,resultsMinus)){
+				continue;
+			}
+			
         	Tweet item = new Tweet();
         	item.setWord(doc.get("_id",Document.class).getString("word"));
         	item.setFrequency(doc.getDouble("value").intValue());

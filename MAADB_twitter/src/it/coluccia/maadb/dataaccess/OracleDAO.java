@@ -15,6 +15,7 @@ import it.coluccia.maadb.datamodel.Emoticon;
 import it.coluccia.maadb.datamodel.HashTag;
 import it.coluccia.maadb.datamodel.Tweet;
 import it.coluccia.maadb.main.MainTweetProcessor;
+import it.coluccia.maadb.utils.Constants;
 import it.coluccia.maadb.utils.SentimentEnum;
 
 public class OracleDAO {
@@ -108,10 +109,12 @@ public class OracleDAO {
 		return result;
 	}
 	
-	public List<Emoticon> getMostFreqEmoticon() throws SQLException{
+	public List<Emoticon> getMostFreqEmoticon(SentimentEnum sentiment) throws SQLException{
 		Statement statement = null;
 
-		String selectSQL = "SELECT WORD,FREQUENCY FROM EMOTICON ORDER BY FREQUENCY DESC FETCH FIRST "+MainTweetProcessor.EMOTICON_LIMIT+ " ROWS ONLY";
+		String selectSQL = "SELECT WORD,FREQUENCY FROM EMOTICON EM1 WHERE EM1.SENTIMENT_FK= " + sentiment.getTableId()
+				+ " AND EM1.WORD NOT IN (SELECT EM2.WORD FROM EMOTICON EM2 WHERE EM2.SENTIMENT_FK != EM1.SENTIMENT_FK AND EM2.FREQUENCY > "+Constants.FREQUENCY_TRESHOLD+ ")"
+				+ " ORDER BY EM1.FREQUENCY DESC FETCH FIRST " + MainTweetProcessor.EMOTICON_LIMIT + " ROWS ONLY";
 		
 		List<Emoticon> result = new ArrayList<>();
 
@@ -143,10 +146,12 @@ public class OracleDAO {
 		return result;
 	}
 	
-	public List<HashTag> getMostFreqHashTag() throws SQLException{
+	public List<HashTag> getMostFreqHashTag(SentimentEnum sentiment) throws SQLException{
 		Statement statement = null;
 
-		String selectSQL = "SELECT WORD,FREQUENCY FROM HASHTAG ORDER BY FREQUENCY DESC FETCH FIRST "+MainTweetProcessor.HASHTAG_LIMIT+ " ROWS ONLY";
+		String selectSQL = "SELECT H1.WORD,H1.FREQUENCY FROM HASHTAG H1 WHERE H1.SENTIMENT_FK= " + sentiment.getTableId()
+				+ " AND H1.WORD NOT IN (SELECT H2.WORD FROM HASHTAG H2 WHERE H2.SENTIMENT_FK != H1.SENTIMENT_FK AND H2.FREQUENCY > "+Constants.FREQUENCY_TRESHOLD+ ")"
+				+ "  ORDER BY FREQUENCY DESC FETCH FIRST " + MainTweetProcessor.HASHTAG_LIMIT + " ROWS ONLY";
 		
 		List<HashTag> result = new ArrayList<>();
 
@@ -178,10 +183,12 @@ public class OracleDAO {
 		return result;
 	}
 	
-	public List<Tweet> getMostFreqTweet() throws SQLException{
+	public List<Tweet> getMostFreqTweet(SentimentEnum sentiment) throws SQLException{
 		Statement statement = null;
 
-		String selectSQL = "SELECT WORD,FREQUENCY FROM TWEET ORDER BY FREQUENCY DESC FETCH FIRST "+MainTweetProcessor.TWEET_LIMIT+ " ROWS ONLY";
+		String selectSQL = "SELECT T1.WORD,T1.FREQUENCY FROM TWEET T1 WHERE SENTIMENT_FK= " + sentiment.getTableId()
+				+ " AND T1.WORD NOT IN (SELECT T2.WORD FROM TWEET T2 WHERE T2.SENTIMENT_FK != T1.SENTIMENT_FK AND T2.FREQUENCY > "+Constants.FREQUENCY_TRESHOLD+ ")"
+				+ "  ORDER BY FREQUENCY DESC FETCH FIRST " + MainTweetProcessor.TWEET_LIMIT + " ROWS ONLY";
 		
 		List<Tweet> result = new ArrayList<>();
 

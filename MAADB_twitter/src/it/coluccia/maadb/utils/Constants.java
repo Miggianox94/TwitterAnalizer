@@ -9,4 +9,6 @@ public class Constants {
 	
 	public static final String mapFunction = "function() {  emit({ 'sentiment': this.sentiment , 'word': this.word }, 1); }";
 	public static final String reduceFunction = "function(key, values) {return Array.sum(values);}";
+	
+	public static final int FREQUENCY_TRESHOLD = 80;
 }
