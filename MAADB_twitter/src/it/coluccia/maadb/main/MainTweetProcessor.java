@@ -35,7 +35,6 @@ import edu.stanford.nlp.simple.Sentence;
 import edu.stanford.nlp.util.StringUtils;
 import it.coluccia.maadb.dataaccess.MongoDBDAO;
 import it.coluccia.maadb.dataaccess.OracleDAO;
-import it.coluccia.maadb.datamodel.Emoji;
 import it.coluccia.maadb.datamodel.Emoticon;
 import it.coluccia.maadb.datamodel.HashTag;
 import it.coluccia.maadb.datamodel.Tweet;

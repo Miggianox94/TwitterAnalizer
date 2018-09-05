@@ -17,3 +17,19 @@ db.system.js.save(
 );
 
 /*------------------------*/
+
+
+function(key, values) {
+    reducedVal = {
+        'EmoSN': 0,
+        'NRC': 0,
+        'sentisense': 0
+    };
+    for (var idx = 0; idx < values.length; idx++) {
+        reducedVal.EmoSN += values[idx].EmoSN;
+        reducedVal.NRC += values[idx].NRC;
+        reducedVal.sentisense += values[idx].sentisense;
+    }
+
+    return reducedVal;
+};

@@ -10,5 +10,8 @@ public class Constants {
 	public static final String mapFunction = "function() {  emit({ 'sentiment': this.sentiment , 'word': this.word }, 1); }";
 	public static final String reduceFunction = "function(key, values) {return Array.sum(values);}";
 	
+	public static final String mapFunctionLexRes = "function() {  emit({ 'sentiment': this.sentiment , 'word': this.word }, { 'EmoSN': this.EmoSN , 'NRC': this.NRC , 'sentisense': this.sentisense}); }";
+	public static final String reduceFunctionLexRes = "function(key, values) {reducedVal = { 'EmoSN': 0 , 'NRC': 0 , 'sentisense': 0};for (var idx = 0; idx < values.length; idx++) {reducedVal.EmoSN += values[idx].EmoSN;reducedVal.NRC += values[idx].NRC;reducedVal.sentisense += values[idx].sentisense;}return reducedVal;}";
+	
 	public static final int FREQUENCY_TRESHOLD = 80;
 }

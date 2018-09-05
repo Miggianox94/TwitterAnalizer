@@ -108,6 +108,20 @@ public class MongoDBDAO {
 		database.runCommand(command);
 	}
 	
+	public void executeMapReduceLexRes(){
+		System.out.println("MONGODB: Executing mapreduce for collection "+ MongoCollection.LEXICALRESOURCES.getMongoName());
+		
+		Bson command = new Document()
+				.append("mapreduce", MongoCollection.LEXICALRESOURCES.getMongoName())
+				.append("map", Constants.mapFunctionLexRes)
+				.append("reduce", Constants.reduceFunctionLexRes)
+				.append("out", new Document()
+						.append("replace", MongoCollection.LEXICALRESOURCES_REDUCED.getMongoName()))
+						/*.append("sharded", false)
+						.append("nonAtomic", false)*/;
+		database.runCommand(command);
+	}
+	
 	public List<Emoji> getMostFreqEmoji(){
 		List<Emoji> result = new ArrayList<>();
 		FindIterable<Document> results = database.getCollection(MongoCollection.EMOJI_REDUCED.getMongoName()).find().limit( MainTweetProcessor.EMOJI_LIMIT ).sort(Sorts.descending("value"));
@@ -343,6 +357,27 @@ public class MongoDBDAO {
 			        Filters.and(Filters.exists("objectid"), Filters.exists("word"), Filters.exists("sentiment"),Filters.in("sentiment",SentimentEnum.toStringSet())));
 			database.createCollection(MongoCollection.EMOJI.getMongoName(),
 			        new CreateCollectionOptions().validationOptions(collOptions));
+		}
+	}
+	
+	
+	public void insertLexicalResource(String word, SentimentEnum sentiment, String modelName){
+		
+		ObjectId objId = new ObjectId();
+		Document lexicalDoc = new Document("objectid",objId.toString()).append("word",word).append("sentiment", sentiment.name());
+		
+		if ("EmoSN".equals(modelName)) {
+			lexicalDoc.append("EmoSN", 1).append("NRC", 0).append("sentisense", 0);
+			database.getCollection(MongoCollection.LEXICALRESOURCES.getMongoName()).insertOne(lexicalDoc);
+		} else if ("NRC".equals(modelName)) {
+			lexicalDoc.append("EmoSN", 0).append("NRC", 1).append("sentisense", 0);
+			database.getCollection(MongoCollection.LEXICALRESOURCES.getMongoName()).insertOne(lexicalDoc);
+		} else if("sentisense".equals(modelName)){
+			lexicalDoc.append("EmoSN", 0).append("NRC", 0).append("sentisense", 1);
+			database.getCollection(MongoCollection.LEXICALRESOURCES.getMongoName()).insertOne(lexicalDoc);
+		}
+		else{
+			throw new IllegalArgumentException("!!! UNKNOWN MODEL: "+modelName);
 		}
 	}
 	

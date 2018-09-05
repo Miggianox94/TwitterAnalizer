@@ -1,3 +1,49 @@
 /*************RIMUOVE I RECORD CON UNO SPECIFICO SENTIMENT***********/
 	db.getCollection('tweets_reduced').remove({_id:{sentiment : {'$eq':'ANTICIPATION'}}})
 	db.getCollection('tweets').remove({sentiment : 'ANTICIPATION'})
+	db.getCollection('tweets_reduced').remove({"_id.sentiment":{$eq : 'ANTICIPATION'}})
+	
+
+/******** MAPREDUCE MANUALE ************/
+
+	db.getCollection('hashtags').mapReduce( 
+	   function() { emit({ 'sentiment ': this.sentiment , 'word ': this.word }, 1); }, 
+		
+	   function(key, values) {return Array.sum(values);}, {    
+		  query:{sentiment:"ANTICIPATION"},
+	      out: {merge:"hashtags_reduced"}
+	   }
+	)
+	
+	
+db.getCollection('lexicalResources').mapReduce(
+    function() {
+        emit({
+            'sentiment': this.sentiment,
+            'word': this.word
+        }, {
+            'EmoSN': this.EmoSN,
+            'NRC': this.NRC,
+            'sentisense': this.sentisense
+        });
+    },
+
+    function(key, values) {
+        reducedVal = {
+            'EmoSN': 0,
+            'NRC': 0,
+            'sentisense': 0
+        };
+        for (var idx = 0; idx < values.length; idx++) {
+            reducedVal.EmoSN += values[idx].EmoSN;
+            reducedVal.NRC += values[idx].NRC;
+            reducedVal.sentisense += values[idx].sentisense;
+        }
+
+        return reducedVal;
+    }, {
+        out: {
+            merge: "lexicalResourcesReduced"
+        }
+    }
+)

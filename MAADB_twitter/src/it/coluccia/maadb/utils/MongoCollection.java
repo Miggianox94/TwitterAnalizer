@@ -9,7 +9,10 @@ public enum MongoCollection {
 	TWEETS_REDUCED("tweets_reduced"),
     HASHTAGS_REDUCED("hashtags_reduced"),
     EMOTICONS_REDUCED("emoticons_reduced"),
-    EMOJI_REDUCED("emoji_reduced");
+    EMOJI_REDUCED("emoji_reduced"),
+	
+	LEXICALRESOURCES("lexicalResources"),
+	LEXICALRESOURCES_REDUCED("lexicalResourcesReduced");
     
 	private String mongoName;
 	

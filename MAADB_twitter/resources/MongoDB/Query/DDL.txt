@@ -48,3 +48,6 @@ db.adminCommand( {
 } )
 
 -------------------
+
+db.createCollection("lexicalResources");
+db.createCollection("lexicalResourcesReduced");
