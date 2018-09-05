@@ -416,7 +416,7 @@ public class MainTweetProcessor {
 		wordCloud.setPadding(2);
 		wordCloud.setBackground(new PixelBoundryBackground(WORDS_CLOUDS_PATH + "/templateImages/" + WORDS_CLOUD_TEMPLATE_IMAGE));
 		wordCloud.setColorPalette(new ColorPalette(new Color(0x587291), new Color(0x2F97C1), new Color(0x1CCAD8), new Color(0x0CF574), new Color(0x40D3F1), new Color(0xFFFFFF)));
-		wordCloud.setFontScalar(new LinearFontScalar(5, 80));
+		wordCloud.setFontScalar(new LinearFontScalar(7, 80));
 		
 		long toDateString = new Date().getTime();
 		String fileName = "wordClouds_"+toDateString+""+sentiment.name()+".png";
