@@ -27,7 +27,7 @@ import com.kennycason.kumo.CollisionMode;
 import com.kennycason.kumo.WordCloud;
 import com.kennycason.kumo.WordFrequency;
 import com.kennycason.kumo.bg.PixelBoundryBackground;
-import com.kennycason.kumo.font.scale.LinearFontScalar;
+import com.kennycason.kumo.font.scale.SqrtFontScalar;
 import com.kennycason.kumo.palette.ColorPalette;
 
 import edu.stanford.nlp.simple.Document;
@@ -411,12 +411,12 @@ public class MainTweetProcessor {
 			wordFrequenciesOracle = generateListWordFrequenciesOracle(sentiment);
 			wordFrequenciesMongo = generateListWordFrequenciesMongo(sentiment);
 		}
-		final Dimension dimension = new Dimension(700, 450);
+		final Dimension dimension = new Dimension(1000, 2000);
 		final WordCloud wordCloud = new WordCloud(dimension, CollisionMode.PIXEL_PERFECT);
 		wordCloud.setPadding(2);
 		wordCloud.setBackground(new PixelBoundryBackground(WORDS_CLOUDS_PATH + "/templateImages/" + WORDS_CLOUD_TEMPLATE_IMAGE));
 		wordCloud.setColorPalette(new ColorPalette(new Color(0x587291), new Color(0x2F97C1), new Color(0x1CCAD8), new Color(0x0CF574), new Color(0x40D3F1), new Color(0xFFFFFF)));
-		wordCloud.setFontScalar(new LinearFontScalar(7, 80));
+		wordCloud.setFontScalar(new SqrtFontScalar(8, 80));
 		
 		long toDateString = new Date().getTime();
 		String fileName = "wordClouds_"+toDateString+""+sentiment.name()+".png";
