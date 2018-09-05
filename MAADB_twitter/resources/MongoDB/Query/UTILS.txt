@@ -28,6 +28,7 @@ db.getCollection('lexicalResources').mapReduce(
         });
     },
 
+
     function(key, values) {
         reducedVal = {
             'EmoSN': 0,
