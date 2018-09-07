@@ -187,24 +187,7 @@ services:
             - mongo_cluster2
         ports:
             - "27017:27017"
-           
-#    load_balancer:
-#        image: dockercloud/haproxy:1.6.2
-#        depends_on:
-#            - mongos
-#        environment:
-#            STATS_PORT: 9000
-#            STATS_AUTH: stats:statsp
-#        volumes:
-#          - ./var/run/docker.sock:/var/run/docker.sock
-#        restart: always
-#        networks:
-#          - mongo_cluster
-#        ports:
-#          - "9090:9000"
-#          - "27017:27017"
-
-     
+        
 
 networks:
   mongo_cluster2:
