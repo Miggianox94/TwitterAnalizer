@@ -75,3 +75,20 @@ FROM
   tweet t1
 WHERE upper(dati1.word)    = upper(t1.word)
 AND t1.sentiment_fk =3;
+
+/*TWEET words trovati che non sono presenti tra i lexical resource = 35 su 200*/
+
+SELECT distinct (dati1.word)
+FROM
+  (SELECT distinct word
+  FROM
+    (SELECT T1.WORD
+    FROM TWEET T1
+    ORDER BY FREQUENCY DESC
+    FETCH FIRST 200 ROWS ONLY
+    )
+  MINUS
+  SELECT word FROM lexicalresource
+  ) dati1,
+  tweet t1
+WHERE upper(dati1.word)    = upper(t1.word);
