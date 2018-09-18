@@ -50,8 +50,8 @@ public class MainTweetProcessor {
 	
 	public static final int EMOJI_LIMIT = 50;
 	public static final int EMOTICON_LIMIT = 50;
-	public static final int HASHTAG_LIMIT = 50;
-	public static final int TWEET_LIMIT = 200;
+	public static final int HASHTAG_LIMIT = 150;
+	public static final int TWEET_LIMIT = 400;
 	
 	private static String jdbcUrl = null;
 	private static String usernameOracle = null;
@@ -449,14 +449,7 @@ public class MainTweetProcessor {
 		
 		List<WordFrequency> result = new ArrayList<>();
 		int counter = 0;
-		/*for(Emoji emoji : mostFrequentEmoji){
-			if(counter > EMOJI_LIMIT){
-				break;
-			}
-			WordFrequency item = new WordFrequency(emoji.getWord(),emoji.getFrequency());
-			result.add(item);
-			counter++;
-		}*/
+
 		counter = 0;
 		for(Emoticon emoticon : mostFrequentEmoticon){
 			if(counter > EMOTICON_LIMIT){
@@ -499,14 +492,7 @@ public class MainTweetProcessor {
 		
 		List<WordFrequency> result = new ArrayList<>();
 		int counter = 0;
-		/*for(Emoji emoji : mostFrequentEmoji){
-			if(counter > EMOJI_LIMIT){
-				break;
-			}
-			WordFrequency item = new WordFrequency(emoji.getWord(),emoji.getFrequency());
-			result.add(item);
-			counter++;
-		}*/
+
 		counter = 0;
 		for(Emoticon emoticon : mostFrequentEmoticon){
 			if(counter > EMOTICON_LIMIT){
